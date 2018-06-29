@@ -2,6 +2,7 @@
 <html lang="en">
 
   <head>
+
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,6 +13,13 @@
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/clockpicker.css" rel="stylesheet">
         <link href="css/standalone.css" rel="stylesheet">
+        <style>
+            input { 
+                text-align: center; 
+                color: white;
+                font-size: 30px;
+            }
+        </style>
 
         <script src="js/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
@@ -22,8 +30,8 @@
     <body style="background-color: black">
 
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="font-size: 20px">
-            <a class="navbar-brand" href="main.html" style="color :aquamarine; font-size: 30px">Schedule Maker</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px">
+            <a class="navbar-brand" href="main.html" style="color :aquamarine; font-size: 35px">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="main.html">Home <span class="sr-only">(current)</span></a>
@@ -43,22 +51,62 @@
                     </div>
                 </li>
             </ul>
-            <button class="btn btn-primary order-3" type="button" onclick="">Save</button>
+            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="">Save Changes</button>
         </nav>
 
-        <!-- Clock Picker     
-        <div class="input-group clockpicker col-1" data-autoclose="true">
-                <input type="text" class="form-control" value="00:00">
+        <!-- Activity List -->
+        <div class="after-header">
+            <div class="row" style="font-size: 50px; color: gold">
+                <div class="col-sm text-center">
+                    Start Time
+                </div>
+                <div class="col-sm text-center">
+                    Activity Name
+                </div>
+                <div class="col-sm text-center">
+                    Duration
+                </div>
+            </div>
+            <ul class="list-group list-group-flush" id="activitylist" style="font-size: 20px">
+                    <li class="list-group-item text-light bg-secondary">
+                        <div>
+                            <div class="row">
+                                <div class="col-sm text-center">
+                                    <div class="input-group clockpicker" data-autoclose="true">
+                                        <input type="text" class="form-control-plaintext" value="00:00">
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-time"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm text-center">
+                                    <input type="text" class="form-control-plaintext" value="">
+                                </div>
+                                <div class="col-sm text-center">
+                                    <input type="text" readonly class="form-control-plaintext" value="00:00">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+            </ul>
         </div>
         <script type="text/javascript">
             $('.clockpicker').clockpicker();
-        </script> 
-        -->
+            var activityList = document.getElementById("activitylist");
+            var initActivity = activityList.getElementsByTagName("LI")[0].cloneNode(true);
+        </script>
 
-        <!-- Activity List -->
-        <div class="container-fluid">
-            
+        <!-- Add Activity Button -->
+        <div class="container-fluid text-center">
+            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity()">Add</button>
         </div>
+        <script type="text/javascript">
+            function addActivity() {
+                newActivity = initActivity.cloneNode(true);
+                newActivity.id++;
+                activityList.appendChild(newActivity);
+            }
+        </script>
 
     </body>
 
