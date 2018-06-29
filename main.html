@@ -19,6 +19,9 @@
                 color: white;
                 font-size: 30px;
             }
+            ::placeholder {
+                color: aquamarine;
+            }
         </style>
 
         <script src="js/jquery.min.js"></script>
@@ -27,17 +30,14 @@
 
     </head>
 
-    <body style="background-color: black">
+    <body style="background-color: rgb(20, 20, 20)">
 
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px">
-            <a class="navbar-brand" href="main.html" style="color :aquamarine; font-size: 35px">Schedule Maker</a>
+            <a class="navbar-brand" href="main.html" style="color : cyan; font-size: 35px">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="main.html">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">To-Do List</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -50,62 +50,113 @@
                     <a class="dropdown-item" href="#">Load Templates</a>
                     </div>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    To-Do List
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="#">Day</a>
+                    <a class="dropdown-item" href="#">Week</a>
+                    <a class="dropdown-item" href="#">Month</a>
+                    <a class="dropdown-item" href="#">Year</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Academic Planner</a>
+                </li>
             </ul>
-            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="">Save Changes</button>
+            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="clearList()" style="margin-right: 10px">Clear Schedule</button>
+            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="saveList()">Save Changes</button>
+            <script type="text/javascript">
+                function clearList() {
+                    while (activityList.firstChild) {
+                        activityList.removeChild(activityList.firstChild);
+                    }
+                    addActivity(templateActivity);
+                };
+                function saveList() {
+                    starts = inputValueArray("activity-start");
+                    names = inputValueArray("activity-name");                  
+                    durations = inputValueArray("activity-duration");
+                    localStorage.setItem("store-start-sched", JSON.stringify(starts));
+                    localStorage.setItem("store-name-sched", JSON.stringify(names));
+                    localStorage.setItem("store-duration-sched", JSON.stringify(durations));
+                };
+                function inputValueArray(inputClass) {
+                    a = [];
+                    inputs = activityList.getElementsByClassName(inputClass);
+                    for (var i = 0; i < inputs.length; i++) {
+                        a.push(inputs[i].value);
+                    }
+                    return a;
+                }
+            </script>
         </nav>
+
+        <!-- Template Activity -->
+        <li class="list-group-item text-light bg-secondary" style="margin-bottom: 10px; display: none" id="template-activity"> 
+            <div class="row">
+                <div class="col-sm text-center">
+                    <div class="input-group clockpicker" data-autoclose="true">
+                        <input type="text" class="form-control-plaintext activity-start" value="" placeholder="Start Time" style="margin-left: 10px">
+                    </div>
+                </div>
+                <div class="col-sm text-center">
+                    <input type="text" class="form-control-plaintext activity-name" value="" placeholder="Name" style="margin-left: 10px">
+                </div>
+                <div class="col-sm text-center">
+                    <input type="text" readonly class="form-control-plaintext activity-duration" value="" placeholder = "Duration" style="margin-left: 10px">
+                </div>
+                <button type="button" class="close" aria-label="Close" style="margin-right: 10px" onclick="remove(this.parentNode.parentNode)">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </li>
+        <script type="text/javascript">
+            function remove(activity) {
+                $( activity ).remove();
+                if (activityList.getElementsByTagName("LI")[0] == null) {
+                    addActivity(templateActivity);
+                };
+            };
+        </script>
 
         <!-- Activity List -->
         <div class="after-header">
-            <div class="row" style="font-size: 50px; color: gold">
-                <div class="col-sm text-center">
-                    Start Time
-                </div>
-                <div class="col-sm text-center">
-                    Activity Name
-                </div>
-                <div class="col-sm text-center">
-                    Duration
-                </div>
-            </div>
-            <ul class="list-group list-group-flush" id="activitylist" style="font-size: 20px">
-                    <li class="list-group-item text-light bg-secondary">
-                        <div>
-                            <div class="row">
-                                <div class="col-sm text-center">
-                                    <div class="input-group clockpicker" data-autoclose="true">
-                                        <input type="text" class="form-control-plaintext" value="00:00">
-                                        <span class="input-group-addon">
-                                            <span class="glyphicon glyphicon-time"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-sm text-center">
-                                    <input type="text" class="form-control-plaintext" value="">
-                                </div>
-                                <div class="col-sm text-center">
-                                    <input type="text" readonly class="form-control-plaintext" value="00:00">
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-            </ul>
+            <ul class="list-group" id="activity-list" style="font-size: 20px; margin-top: 10px"></ul>
         </div>
         <script type="text/javascript">
-            $('.clockpicker').clockpicker();
-            var activityList = document.getElementById("activitylist");
-            var initActivity = activityList.getElementsByTagName("LI")[0].cloneNode(true);
+            var activityList = document.getElementById("activity-list");
+            var templateActivity = document.getElementById("template-activity").cloneNode(true);
+            templateActivity.style.display = "block";
+            window.onload = function() {
+                if (localStorage.getItem("store-start-sched")) {
+                    starts = JSON.parse(localStorage.getItem("store-start-sched"));
+                    names = JSON.parse(localStorage.getItem("store-name-sched"));
+                    durations = JSON.parse(localStorage.getItem("store-duration-sched"));
+                    for (var i = 0; i < starts.length; i++) {
+                        newActivity = templateActivity.cloneNode(true);
+                        newActivity.getElementsByClassName("activity-start")[0].value = starts[i];
+                        newActivity.getElementsByClassName("activity-name")[0].value = names[i];
+                        newActivity.getElementsByClassName("activity-duration")[0].value = durations[i];
+                        addActivity(newActivity);
+                    }           
+                } else {
+                    addActivity(templateActivity);
+                }
+            };
         </script>
 
         <!-- Add Activity Button -->
         <div class="container-fluid text-center">
-            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity()">Add</button>
+            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity(templateActivity)">Add</button>
         </div>
         <script type="text/javascript">
-            function addActivity() {
-                newActivity = initActivity.cloneNode(true);
-                newActivity.id++;
+            function addActivity(activity) {
+                newActivity = activity.cloneNode(true);
                 activityList.appendChild(newActivity);
-            }
+                $('.clockpicker').clockpicker();
+            };
         </script>
 
     </body>
