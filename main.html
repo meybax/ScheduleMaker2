@@ -20,7 +20,11 @@
                 font-size: 30px;
             }
             ::placeholder {
-                color: aquamarine;
+                color: springgreen;
+            }
+            .list-group-item {
+                border-top-color: #fff;
+                border-bottom-color: #fff;
             }
         </style>
 
@@ -30,7 +34,7 @@
 
     </head>
 
-    <body style="background-color: rgb(20, 20, 20)">
+    <body style="background-color: black">
 
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px">
@@ -94,7 +98,7 @@
         </nav>
 
         <!-- Template Activity -->
-        <li class="list-group-item text-light bg-secondary" style="margin-bottom: 10px; display: none" id="template-activity"> 
+        <li class="list-group-item text-light" style="display: none; background-color: black" id="template-activity"> 
             <div class="row">
                 <div class="col-sm text-center">
                     <div class="input-group clockpicker" data-autoclose="true">
@@ -123,7 +127,7 @@
 
         <!-- Activity List -->
         <div class="after-header">
-            <ul class="list-group" id="activity-list" style="font-size: 20px; margin-top: 10px"></ul>
+            <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px"></ul>
         </div>
         <script type="text/javascript">
             var activityList = document.getElementById("activity-list");
@@ -148,7 +152,7 @@
         </script>
 
         <!-- Add Activity Button -->
-        <div class="container-fluid text-center">
+        <div class="container-fluid text-center" style="margin-top: 10px">
             <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity(templateActivity)">Add</button>
         </div>
         <script type="text/javascript">
