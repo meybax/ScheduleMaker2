@@ -21,11 +21,14 @@
             }
             ::placeholder {
                 color: springgreen;
+                opacity: 0.75;
             }
             .list-group-item {
                 border-top-color: #fff;
                 border-bottom-color: #fff;
             }
+            .activity-start { color: lime; }
+            .activity-duration { color: deepskyblue;}
         </style>
 
         <script src="js/jquery.min.js"></script>
@@ -43,16 +46,8 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="main.html">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Templates
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="#">View Templates</a>
-                    <a class="dropdown-item" href="#">Edit Templates</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Load Templates</a>
-                    </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Templates</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -60,8 +55,11 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                     <a class="dropdown-item" href="#">Day</a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#">Week</a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#">Month</a>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#">Year</a>
                     </div>
                 </li>
@@ -69,60 +67,45 @@
                     <a class="nav-link" href="#">Academic Planner</a>
                 </li>
             </ul>
-            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="clearList()" style="margin-right: 10px">Clear Schedule</button>
-            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="saveList()">Save Changes</button>
-            <script type="text/javascript">
-                function clearList() {
-                    while (activityList.firstChild) {
-                        activityList.removeChild(activityList.firstChild);
-                    }
-                    addActivity(templateActivity);
-                };
-                function saveList() {
-                    starts = inputValueArray("activity-start");
-                    names = inputValueArray("activity-name");                  
-                    durations = inputValueArray("activity-duration");
-                    localStorage.setItem("store-start-sched", JSON.stringify(starts));
-                    localStorage.setItem("store-name-sched", JSON.stringify(names));
-                    localStorage.setItem("store-duration-sched", JSON.stringify(durations));
-                };
-                function inputValueArray(inputClass) {
-                    a = [];
-                    inputs = activityList.getElementsByClassName(inputClass);
-                    for (var i = 0; i < inputs.length; i++) {
-                        a.push(inputs[i].value);
-                    }
-                    return a;
-                }
-            </script>
         </nav>
 
         <!-- Template Activity -->
-        <li class="list-group-item text-light" style="display: none; background-color: black" id="template-activity"> 
+        <li class="list-group-item text-light disabled" style="display: none; background-color: black" id="template-activity"> 
             <div class="row">
                 <div class="col-sm text-center">
-                    <div class="input-group clockpicker" data-autoclose="true">
-                        <input type="text" class="form-control-plaintext activity-start" value="" placeholder="Start Time" style="margin-left: 10px">
+                    <div class="input-group clockpicker" data-autoclose="true" options-afterDone="afterDone()">
+                        <input type="text" class="form-control-plaintext activity-start" placeholder="Start Time" style="margin-left: 10px">
                     </div>
                 </div>
                 <div class="col-sm text-center">
-                    <input type="text" class="form-control-plaintext activity-name" value="" placeholder="Name" style="margin-left: 10px">
+                    <input type="text" class="form-control-plaintext activity-name" placeholder="Name" style="margin-left: 10px">
                 </div>
                 <div class="col-sm text-center">
-                    <input type="text" readonly class="form-control-plaintext activity-duration" value="" placeholder = "Duration" style="margin-left: 10px">
+                    <input type="text" readonly class="form-control-plaintext activity-duration" style="margin-left: 10px">
                 </div>
                 <button type="button" class="close" aria-label="Close" style="margin-right: 10px" onclick="remove(this.parentNode.parentNode)">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true" style="color: gray">&times;</span>
                 </button>
             </div>
         </li>
         <script type="text/javascript">
             function remove(activity) {
-                $( activity ).remove();
+                var index = getIndex(activity);
+                $(activity).remove();
                 if (activityList.getElementsByTagName("LI")[0] == null) {
                     addActivity(templateActivity);
-                };
+                } else if (index != 0) {
+                    updateDuration(index-1);
+                }
+                saveList();
             };
+            function getIndex(node) {
+                var childs = node.parentNode.childNodes;
+                for (i = 0; i < childs.length; i++) {
+                    if (node == childs[i]) break;
+                }
+                return i;
+            }
         </script>
 
         <!-- Activity List -->
@@ -133,13 +116,15 @@
             var activityList = document.getElementById("activity-list");
             var templateActivity = document.getElementById("template-activity").cloneNode(true);
             templateActivity.style.display = "block";
+
             window.onload = function() {
                 if (localStorage.getItem("store-start-sched")) {
-                    starts = JSON.parse(localStorage.getItem("store-start-sched"));
-                    names = JSON.parse(localStorage.getItem("store-name-sched"));
-                    durations = JSON.parse(localStorage.getItem("store-duration-sched"));
+                    var starts = JSON.parse(localStorage.getItem("store-start-sched"));
+                    var names = JSON.parse(localStorage.getItem("store-name-sched"));
+                    var durations = JSON.parse(localStorage.getItem("store-duration-sched"));
+
                     for (var i = 0; i < starts.length; i++) {
-                        newActivity = templateActivity.cloneNode(true);
+                        var newActivity = templateActivity.cloneNode(true);
                         newActivity.getElementsByClassName("activity-start")[0].value = starts[i];
                         newActivity.getElementsByClassName("activity-name")[0].value = names[i];
                         newActivity.getElementsByClassName("activity-duration")[0].value = durations[i];
@@ -157,10 +142,78 @@
         </div>
         <script type="text/javascript">
             function addActivity(activity) {
-                newActivity = activity.cloneNode(true);
+                var newActivity = activity.cloneNode(true);
                 activityList.appendChild(newActivity);
-                $('.clockpicker').clockpicker();
+                $('.clockpicker').clockpicker({afterDone: function() {
+                  insertActivity(newActivity);  
+                }});
+                saveList();
             };
+
+            function insertActivity(activity) {
+                var temp = activity.cloneNode(true);
+                $(activity).remove();
+                var tempTime = temp.getElementsByClassName("activity-start")[0].value;
+                var activities = activityList.getElementsByClassName("list-group-item");
+                var index = 0;
+                
+                while(index < activities.length && tempTime > activities[index].getElementsByClassName("activity-start")[0].value) {
+                    index++;
+                }
+                if (index == activities.length) {
+                    activityList.appendChild(temp);
+                } else {
+                    activityList.insertBefore(temp, activities[index]);
+                }
+
+                updateDuration(index);
+                if (index != 0) {
+                    updateDuration(index-1);
+                }
+
+                $('.clockpicker').clockpicker({afterDone: function() {
+                  insertActivity(temp);  
+                }});
+                saveList();
+            };
+
+            function updateDuration(index) {
+                var activities = activityList.getElementsByClassName("list-group-item");
+                if (index == activities.length-1) {
+                    activities[index].getElementsByClassName("activity-duration")[0].value = "";
+                } else {
+                    var currStart = activities[index].getElementsByClassName("activity-start")[0].value;
+                    var nextStart = activities[index+1].getElementsByClassName("activity-start")[0].value;;
+                    activities[index].getElementsByClassName("activity-duration")[0].value = timeDifference(currStart, nextStart);
+                }
+            }
+            function timeDifference(curr, next) {
+                var hrDiff = next.substring(0, 2) - curr.substring(0, 2);
+                var minDiff = next.substring(3, 5) - curr.substring(3, 5);
+                if (minDiff < 0) {
+                    minDiff += 60;
+                    hrDiff--;
+                }
+                if (minDiff.toString().length == 1) {minDiff = "0" + minDiff;}
+                return hrDiff + ":" + minDiff;
+            }
+
+            function saveList() {
+                var starts = inputValueArray("activity-start");
+                var names = inputValueArray("activity-name");                  
+                var durations = inputValueArray("activity-duration");
+                localStorage.setItem("store-start-sched", JSON.stringify(starts));
+                localStorage.setItem("store-name-sched", JSON.stringify(names));
+                localStorage.setItem("store-duration-sched", JSON.stringify(durations));
+            };
+            function inputValueArray(inputClass) {
+                var a = [];
+                var inputs = activityList.getElementsByClassName(inputClass);
+                for (var i = 0; i < inputs.length; i++) {
+                    a.push(inputs[i].value);
+                }
+                return a;
+            }
         </script>
 
     </body>
