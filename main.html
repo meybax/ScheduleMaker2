@@ -24,11 +24,16 @@
                 opacity: 0.75;
             }
             .list-group-item {
-                border-top-color: #fff;
-                border-bottom-color: #fff;
+                border-top-color: white;
+                border-bottom-color: white;
+                background-color: black;
             }
+            .current {
+                background-color:  blue;
+            }
+            .past { opacity: 0.5; }
             .activity-start { color: lime; }
-            .activity-duration { color: deepskyblue;}
+            .activity-duration { color: cyan;}
         </style>
 
         <script src="js/jquery.min.js"></script>
@@ -41,7 +46,7 @@
 
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px">
-            <a class="navbar-brand" href="main.html" style="color : cyan; font-size: 35px">Schedule Maker</a>
+            <a class="navbar-brand" href="main.html" style="color : deepskyblue; font-size: 35px">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="main.html">Home <span class="sr-only">(current)</span></a>
@@ -70,7 +75,7 @@
         </nav>
 
         <!-- Template Activity -->
-        <li class="list-group-item text-light disabled" style="display: none; background-color: black" id="template-activity"> 
+        <li class="list-group-item text-light" style="display: none" id="template-activity"> 
             <div class="row">
                 <div class="col-sm text-center">
                     <div class="input-group clockpicker" data-autoclose="true" options-afterDone="afterDone()">
@@ -134,6 +139,41 @@
                     addActivity(templateActivity);
                 }
             };
+            
+            setInterval(updateStatus, 500);
+            function updateStatus() {
+                var activities = activityList.getElementsByClassName("list-group-item");
+                var date = new Date();
+                var currHr = date.getHours();
+                var currMin = date.getMinutes();
+                if (currHr.toString().length == 1) {currHr = "0" + currHr;}
+                if (currMin.toString().length == 1) {currMin = "0" + currMin;}
+                var currTime = currHr + ":" + currMin;
+                var currIndex = 0;
+                var activated = false;
+
+                while (currIndex < activities.length - 1 && activities[currIndex+1].getElementsByClassName("activity-start")[0].value != "") {
+                    var nextTime = activities[currIndex+1].getElementsByClassName("activity-start")[0].value;
+                    if (currTime >= nextTime) {
+                        activities[currIndex].classList.remove("current");
+                        activities[currIndex].classList.add("past");
+                    } else if (currTime < nextTime && !activated) {
+                        activities[currIndex].classList.remove("past");
+                        activities[currIndex].classList.add("current");
+                        activated = true;
+                    } else {
+                        activities[currIndex].classList.remove("past");
+                        activities[currIndex].classList.remove("current");
+                    }
+                    currIndex++;
+                }
+                activities[currIndex].classList.remove("past");
+                if (currTime < activities[0].getElementsByClassName("activity-start")[0].value) {
+                    activities[currIndex].classList.remove("current");
+                } else if (!activated) {
+                    activities[currIndex].classList.add("current");
+                }
+            }
         </script>
 
         <!-- Add Activity Button -->
@@ -143,10 +183,9 @@
         <script type="text/javascript">
             function addActivity(activity) {
                 var newActivity = activity.cloneNode(true);
+                activateCallBackFunctions(newActivity);
+
                 activityList.appendChild(newActivity);
-                $('.clockpicker').clockpicker({afterDone: function() {
-                  insertActivity(newActivity);  
-                }});
                 saveList();
             };
 
@@ -171,20 +210,21 @@
                     updateDuration(index-1);
                 }
 
-                $('.clockpicker').clockpicker({afterDone: function() {
-                  insertActivity(temp);  
-                }});
+                activateCallBackFunctions(temp);
                 saveList();
             };
 
             function updateDuration(index) {
                 var activities = activityList.getElementsByClassName("list-group-item");
-                if (index == activities.length-1) {
-                    activities[index].getElementsByClassName("activity-duration")[0].value = "";
-                } else {
+                activities[activities.length-1].getElementsByClassName("activity-duration")[0].value = "";
+                if (index < activities.length-1) {
                     var currStart = activities[index].getElementsByClassName("activity-start")[0].value;
-                    var nextStart = activities[index+1].getElementsByClassName("activity-start")[0].value;;
-                    activities[index].getElementsByClassName("activity-duration")[0].value = timeDifference(currStart, nextStart);
+                    var nextStart = activities[index+1].getElementsByClassName("activity-start")[0].value;
+                    if (nextStart == "" || !isValidInput(nextStart)) {
+                        activities[index].getElementsByClassName("activity-duration")[0].value = "";
+                    } else {
+                        activities[index].getElementsByClassName("activity-duration")[0].value = timeDifference(currStart, nextStart);
+                    }
                 }
             }
             function timeDifference(curr, next) {
@@ -194,6 +234,7 @@
                     minDiff += 60;
                     hrDiff--;
                 }
+                if (hrDiff.toString().length == 1) {hrDiff = "0" + hrDiff;}
                 if (minDiff.toString().length == 1) {minDiff = "0" + minDiff;}
                 return hrDiff + ":" + minDiff;
             }
@@ -213,6 +254,46 @@
                     a.push(inputs[i].value);
                 }
                 return a;
+            }
+
+            function activateCallBackFunctions(activity) {
+                var nameInput = activity.getElementsByClassName("activity-name")[0];
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        saveList();
+                    }
+                });
+                var startInput = activity.getElementsByClassName("activity-start")[0];
+                startInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        if(isValidInput(activity.getElementsByClassName("activity-start")[0].value)) {
+                            insertActivity(activity);
+                        } else {
+                            var alert = document.createElement("DIV");
+                            alert.style = "text-align: center; margin-bottom: 0px";
+                            alert.classList.add("alert", "alert-danger", "alert-dismissible", "show", "fade")
+                            alert.setAttribute("role", "alert");
+                            alert.innerHTML = "<strong>Invalid input</strong>. Must be in format XX:XX (ex. 07:30)" +
+                                "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                                    "<span aria-hidden=\"true\">&times;</span>" +
+                                "</button>";
+                            $(activity).after(alert);
+                        }
+                    }
+                });
+                var clockpicker = activity.getElementsByClassName("clockpicker")[0];
+                $(clockpicker).clockpicker({afterDone: function() {
+                    insertActivity(activity);  
+                }});
+            }
+
+            function isValidInput(value) {
+                if (value.length != 5) {return false;}
+                hrInput = value.substring(0, 2);
+                minInput = value.substring(3, 5);
+                if (isNaN(hrInput) || isNaN(minInput)) {return false;}
+                if (value[2] != ':') {return false;}
+                return true;
             }
         </script>
 
