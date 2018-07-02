@@ -8,9 +8,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Schedule Maker 2.0</title>
 
+        <!-- CSS Libraries/Plug-Ins -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <link href="css/clockpicker.css" rel="stylesheet">
         <link href="css/standalone.css" rel="stylesheet">
+        <!-- General CSS Style -->
         <style>
             input { 
                 text-align: center; 
@@ -33,12 +35,14 @@
             .activity-duration { color: cyan;}
         </style>
 
+        <!-- Javascript Libraries/Plug-ins -->
         <script src="js/jquery.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="js/clockpicker.js"></script>
 
         <!-- Global Functions -->
         <script type="text/javascript">
+            // function to store schedule in local storage
             function saveList() {
                 var starts = inputValueArray("activity-start");
                 var names = inputValueArray("activity-name");                  
@@ -47,22 +51,25 @@
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
                 localStorage.setItem("store-duration-sched", JSON.stringify(durations));
             }
+            // saveList helper function to retrieve array of input values
             function inputValueArray(inputClass) {
                 var a = [];
                 var inputs = activityList.getElementsByClassName(inputClass);
                 for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
                 return a;
             }
-
-            function updateDuration(index) {
+            
+            // function to iterate through activities to change the duration
+            function updateDuration() {
                 var activities = getValidActivities();
-                getInput(last(activities), "activity-duration").value = "";
-                if (index < activities.length - 1) {
-                    var currStart = getInput(activities[index], "activity-start").value;
-                    var nextStart = getInput(activities[index+1], "activity-start").value;
-                    getInput(activities[index], "activity-duration").value = timeDifference(currStart, nextStart);
+                for (var i = 0; i < activities.length-1; i++) {
+                    var time = getInput(activities[i], "activity-start").value;
+                    var timeNext = getInput(activities[i+1], "activity-start").value;
+                    getInput(activities[i], "activity-duration").value = timeDifference(time, timeNext);
                 }
+                getInput(last(activities), "activity-duration").value = "";
             }
+            // updateDuration helper function to calculate time difference
             function timeDifference(curr, next) {
                 var time;
                 var hrDiff = next.substring(0, 2) - curr.substring(0, 2);
@@ -76,7 +83,8 @@
                 else time = hrDiff + " hr " + minDiff + " min";
                 return time;
             }
-
+            
+            // function to return array of activities which have a valid start time
             function getValidActivities() {
                 var activities = activityList.getElementsByClassName("list-group-item");
                 var validActivities = [];
@@ -86,7 +94,8 @@
                 }
                 return validActivities;
             }
-
+            
+            // function to check if an input value is a valid time
             function isValidInput(value) {
                 if (value.length != 5) { return false; }
                 hrInput = value.substring(0, 2);
@@ -95,17 +104,20 @@
                 if (value[2] != ':') { return false; }
                 return true;
             }
-
+            
+            // function to return the index value of a child node
             function getIndex(node) {
                 var childs = node.parentNode.childNodes;
                 for (i = 0; i < childs.length; i++) { if (node == childs[i]) break; }
                 return i;
             }
             
+            // function to return the last element of a list with shorter syntax
             function last(list) {
                 return list[list.length-1];
             }
-
+            
+            // function to retrieve the input element with shorter syntax
             function getInput(activity, className) { return activity.getElementsByClassName(className)[0]; }
         </script>
 
@@ -163,11 +175,12 @@
             </div>
         </li>
         <script type="text/javascript">
+            // function to delete activity when closed
             function remove(activity) {
                 var index = getIndex(activity);
                 $(activity).remove();
                 if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
-                else if (index != 0) updateDuration(index-1);
+                updateDuration();
                 saveList();
             };
         </script>
@@ -177,17 +190,21 @@
             <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px;"></ul>
         </div>
         <script type="text/javascript">
+            // initializes global variables of activity list and template activity
             var activityList = document.getElementById("activity-list");
             var templateActivity = document.getElementById("template-activity").cloneNode(true);
             templateActivity.style.display = "block";
-
+            
+            // loads stored schedule when window is opened
             window.onload = function() {
                 if (localStorage.getItem("store-start-sched")) {
+                    // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-sched"));
                     var names = JSON.parse(localStorage.getItem("store-name-sched"));
                     var durations = JSON.parse(localStorage.getItem("store-duration-sched"));
 
                     for (var i = 0; i < starts.length; i++) {
+                        // uses data to recreate activity list
                         var newActivity = templateActivity.cloneNode(true);
                         getInput(newActivity, "activity-start").value = starts[i];
                         getInput(newActivity, "activity-name").value = names[i];
@@ -199,7 +216,8 @@
                 }
             };
             
-            var isEditing = false;
+            // function to highlight current activity and dim past activity
+            var isEditing = false;  // variable checking whether the user is editing the start time
             setInterval(updateStatus, 100);
             function updateStatus() {
                 if (!isEditing) {
@@ -207,6 +225,9 @@
                     var date = new Date();
                     var currTime = getClockTime(date.getHours(), date.getMinutes());
                     
+                    // iterates through list to identify the current activity,
+                    // dim past activities,
+                    // and clear the remaining activiites
                     if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
                     else clearStatus(last(activities));
                     for (var i = 0; i < activities.length - 1; i++) {
@@ -219,11 +240,13 @@
                     }
                 }
             }
+            // function to convert raw numbers into clock time string
             function getClockTime(hr, min) {
                 if (hr.toString().length == 1) hr = "0" + hr;
                 if (min.toString().length == 1) min = "0" + min;
                 return hr + ":" + min;
             }
+            // updateStatus helper functions to change classes
             function updateCurrent(activity) {
                 activity.classList.remove("past");
                 activity.classList.add("current");
@@ -243,6 +266,7 @@
             <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity(templateActivity)">Add</button>
         </div>
         <script type="text/javascript">
+            // function to append blank activity to activity list
             function addActivity(activity) {
                 var newActivity = activity.cloneNode(true);
                 activateCallBackFunctions(newActivity);
@@ -250,10 +274,13 @@
                 activityList.appendChild(newActivity);
                 saveList();
             }
-
+            
+            // function to insert activity in proper place after being edited
             function insertActivity(activity) {
+                // creates copy and removes original activity
                 var temp = activity.cloneNode(true);
                 $(activity).remove();
+                // iterates through valid activities to identify correct slot for updated activity
                 var activities = getValidActivities();
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
@@ -262,42 +289,49 @@
                     if (index == activities.length) $(last(activities)).after(temp);
                     else activityList.insertBefore(temp, activities[index]);
                 } else activityList.insertBefore(temp, activityList.firstChild);
-
-                updateDuration(index);
-                if (index != 0) updateDuration(index-1);
-
+                
+                // obligatory functions after editing list
+                updateDuration();
                 activateCallBackFunctions(temp);
                 saveList();
             }
-
+            
+            // function to establish call back functions for each new activity
             function activateCallBackFunctions(activity) {
+                // activates clockpicker plug-in
                 var clockpicker = activity.getElementsByClassName("clockpicker")[0];
                 var popover;
                 $(clockpicker).clockpicker({
                     afterShow: function(self) { popover = self; }
                 });
-
+                
+                // watches name input field for activity to save changes
                 var nameInput = getInput(activity, "activity-name");
                 nameInput.addEventListener("keyup", function(event) {
                     if (event.key === "Enter") $(nameInput).trigger("blur");
                 });
                 nameInput.onblur = function() { saveList(); };
-
+                
+                // watches start time input field for activity to update list
                 var startInput = getInput(activity, "activity-start");
                 startInput.addEventListener("keyup", function(event) { 
                     if (event.key === "Enter") { $(startInput).trigger("blur"); }
                 });
                 startInput.onfocus = function() { isEditing = true; };
                 startInput.onblur = function() {
-                    popover.hide();
-                    isEditing = false;
-                    checkTimeInput(activity);
+                    popover.hide(); // hides clockpicker popover when start time input blurs
+                    isEditing = false;  // updates whether the user editing for updateStatus
+                    checkTimeInput(activity);   // verifies input value
                 };
             }
+            // activateCallBackFunctions helper to verify start time input
             function checkTimeInput(activity) {
                 $(".alert").alert('close');
+                // if input field is valid, inserts the updated activity
                 if (isValidInput(getInput(activity, "activity-start").value)) insertActivity(activity);
+                // if input field is NOT valid, presents error
                 else {
+                    // creates alert element
                     var alert = document.createElement("DIV");
                     alert.style = "text-align: center; margin-bottom: 0px";
                     alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
@@ -307,7 +341,8 @@
                             "<span aria-hidden=\"true\">&times;</span>" +
                         "</button>";
                     $(activity).after(alert);
-
+                    
+                    // reverts invalid input back to previously valid input
                     var index = getIndex(activity);
                     getInput(activity, "activity-start").value = JSON.parse(localStorage.getItem("store-start-sched"))[index];
                 }
