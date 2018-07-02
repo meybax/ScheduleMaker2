@@ -1,0 +1,17 @@
+input { 
+    text-align: center; 
+    color: white;
+    font-size: 30px;
+}
+input:focus{ outline: none; }
+
+::placeholder {
+    color: springgreen;
+    opacity: 0.75;
+}
+
+.list-group-item {
+    border-top-color: white;
+    border-bottom-color: white;
+    background-color: black;
+}

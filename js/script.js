@@ -1,0 +1,1 @@
+function loadToDoList(type) { localStorage.setItem("list-type", type); }

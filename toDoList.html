@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>To-Do List</title>
+
+        <!-- CSS Libraries/Plug-Ins -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+        <link href="css/clockpicker.css" rel="stylesheet">
+        <link href="css/standalone.css" rel="stylesheet">
+        <link href="css/style.css" rel="stylesheet">
+        <!-- General CSS Style -->
+        <style>
+        </style>
+
+        <!-- Javascript Libraries/Plug-ins -->
+        <script src="js/jquery.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/clockpicker.js"></script>
+        <script src="js/script.js"></script>
+        <!-- Global Functions -->
+        <script type="text/javascript">
+                        
+            // loads stored schedule when window is opened
+            window.onload = function() {
+                
+            };
+
+        </script>
+
+    </head>
+
+    <body style="background-color: black">
+
+       <!-- Navbar -->
+       <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px;">
+            <a class="navbar-brand" href="main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="main.html">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="template/templateViewer.html">Templates</a>
+                </li>
+                <li class="nav-item dropdown active">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    To-Do List
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" onclick="loadToDoList('day')" href="toDoList.html">Day</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" onclick="loadToDoList('week')" href="toDoList.html">Week</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" onclick="loadToDoList('month')" href="toDoList.html">Month</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" onclick="loadToDoList('year')" href="toDoList.html">Year</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="academicPlanner.html">Academic Planner</a>
+                </li>
+            </ul>
+        </nav>
+
+    </body>
+
+</html>
