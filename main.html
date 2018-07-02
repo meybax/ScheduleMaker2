@@ -17,6 +17,7 @@
                 color: white;
                 font-size: 30px;
             }
+            input:focus{ outline: none; }
             ::placeholder {
                 color: springgreen;
                 opacity: 0.75;
@@ -209,7 +210,7 @@
                     if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
                     else clearStatus(last(activities));
                     for (var i = 0; i < activities.length - 1; i++) {
-                        var time = getInput(activities[i+1], "activity-start").value;
+                        var time = getInput(activities[i], "activity-start").value;
                         var timeNext = getInput(activities[i+1], "activity-start").value;
                         if (currTime >= time) {
                             if (currTime < timeNext) updateCurrent(activities[i]);
