@@ -6,11 +6,9 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
         <title>Schedule Maker 2.0</title>
 
-        <!-- Bootstrap -->
-        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/bootstrap.css" rel="stylesheet">
         <link href="css/clockpicker.css" rel="stylesheet">
         <link href="css/standalone.css" rel="stylesheet">
         <style>
@@ -28,25 +26,95 @@
                 border-bottom-color: white;
                 background-color: black;
             }
-            .current {
-                background-color:  blue;
-            }
+            .current { background-color:  rgb(25, 25, 200); }
             .past { opacity: 0.5; }
             .activity-start { color: lime; }
             .activity-duration { color: cyan;}
         </style>
 
-        <script src="js/jquery.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
+        <script src="js/jquery.js"></script>
+        <script src="js/bootstrap.js"></script>
         <script src="js/clockpicker.js"></script>
+
+        <!-- Global Functions -->
+        <script type="text/javascript">
+            function saveList() {
+                var starts = inputValueArray("activity-start");
+                var names = inputValueArray("activity-name");                  
+                var durations = inputValueArray("activity-duration");
+                localStorage.setItem("store-start-sched", JSON.stringify(starts));
+                localStorage.setItem("store-name-sched", JSON.stringify(names));
+                localStorage.setItem("store-duration-sched", JSON.stringify(durations));
+            }
+            function inputValueArray(inputClass) {
+                var a = [];
+                var inputs = activityList.getElementsByClassName(inputClass);
+                for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
+                return a;
+            }
+
+            function updateDuration(index) {
+                var activities = getValidActivities();
+                getInput(last(activities), "activity-duration").value = "";
+                if (index < activities.length - 1) {
+                    var currStart = getInput(activities[index], "activity-start").value;
+                    var nextStart = getInput(activities[index+1], "activity-start").value;
+                    getInput(activities[index], "activity-duration").value = timeDifference(currStart, nextStart);
+                }
+            }
+            function timeDifference(curr, next) {
+                var time;
+                var hrDiff = next.substring(0, 2) - curr.substring(0, 2);
+                var minDiff = next.substring(3, 5) - curr.substring(3, 5);
+                if (minDiff < 0) {
+                    minDiff += 60;
+                    hrDiff--;
+                }
+                if (hrDiff == 0) time = minDiff + " min";
+                else if (minDiff == 0) time = hrDiff + " hr";
+                else time = hrDiff + " hr " + minDiff + " min";
+                return time;
+            }
+
+            function getValidActivities() {
+                var activities = activityList.getElementsByClassName("list-group-item");
+                var validActivities = [];
+                for (var i = 0; i < activities.length; i++) {
+                    var start = getInput(activities[i], "activity-start").value;
+                    if (isValidInput(start)) validActivities.push(activities[i]);
+                }
+                return validActivities;
+            }
+
+            function isValidInput(value) {
+                if (value.length != 5) { return false; }
+                hrInput = value.substring(0, 2);
+                minInput = value.substring(3, 5);
+                if (isNaN(hrInput) || isNaN(minInput)) { return false; }
+                if (value[2] != ':') { return false; }
+                return true;
+            }
+
+            function getIndex(node) {
+                var childs = node.parentNode.childNodes;
+                for (i = 0; i < childs.length; i++) { if (node == childs[i]) break; }
+                return i;
+            }
+            
+            function last(list) {
+                return list[list.length-1];
+            }
+
+            function getInput(activity, className) { return activity.getElementsByClassName(className)[0]; }
+        </script>
 
     </head>
 
     <body style="background-color: black">
 
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px">
-            <a class="navbar-brand" href="main.html" style="color : deepskyblue; font-size: 35px">Schedule Maker</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px;">
+            <a class="navbar-brand" href="main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="main.html">Home <span class="sr-only">(current)</span></a>
@@ -75,10 +143,10 @@
         </nav>
 
         <!-- Template Activity -->
-        <li class="list-group-item text-light" style="display: none" id="template-activity"> 
+        <li class="list-group-item text-light" style="display: none;" id="template-activity"> 
             <div class="row">
                 <div class="col-sm text-center">
-                    <div class="input-group clockpicker" data-autoclose="true" options-afterDone="afterDone()">
+                    <div class="input-group clockpicker" data-autoclose="true">
                         <input type="text" class="form-control-plaintext activity-start" placeholder="Start Time" style="margin-left: 10px">
                     </div>
                 </div>
@@ -88,8 +156,8 @@
                 <div class="col-sm text-center">
                     <input type="text" readonly class="form-control-plaintext activity-duration" style="margin-left: 10px">
                 </div>
-                <button type="button" class="close" aria-label="Close" style="margin-right: 10px" onclick="remove(this.parentNode.parentNode)">
-                    <span aria-hidden="true" style="color: gray">&times;</span>
+                <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="remove(this.parentNode.parentNode)">
+                    <span aria-hidden="true" style="color: gray;">&times;</span>
                 </button>
             </div>
         </li>
@@ -97,25 +165,15 @@
             function remove(activity) {
                 var index = getIndex(activity);
                 $(activity).remove();
-                if (activityList.getElementsByTagName("LI")[0] == null) {
-                    addActivity(templateActivity);
-                } else if (index != 0) {
-                    updateDuration(index-1);
-                }
+                if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
+                else if (index != 0) updateDuration(index-1);
                 saveList();
             };
-            function getIndex(node) {
-                var childs = node.parentNode.childNodes;
-                for (i = 0; i < childs.length; i++) {
-                    if (node == childs[i]) break;
-                }
-                return i;
-            }
         </script>
 
         <!-- Activity List -->
         <div class="after-header">
-            <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px"></ul>
+            <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px;"></ul>
         </div>
         <script type="text/javascript">
             var activityList = document.getElementById("activity-list");
@@ -130,9 +188,9 @@
 
                     for (var i = 0; i < starts.length; i++) {
                         var newActivity = templateActivity.cloneNode(true);
-                        newActivity.getElementsByClassName("activity-start")[0].value = starts[i];
-                        newActivity.getElementsByClassName("activity-name")[0].value = names[i];
-                        newActivity.getElementsByClassName("activity-duration")[0].value = durations[i];
+                        getInput(newActivity, "activity-start").value = starts[i];
+                        getInput(newActivity, "activity-name").value = names[i];
+                        getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
                 } else {
@@ -140,39 +198,42 @@
                 }
             };
             
-            setInterval(updateStatus, 500);
+            var isEditing = false;
+            setInterval(updateStatus, 100);
             function updateStatus() {
-                var activities = activityList.getElementsByClassName("list-group-item");
-                var date = new Date();
-                var currHr = date.getHours();
-                var currMin = date.getMinutes();
-                if (currHr.toString().length == 1) {currHr = "0" + currHr;}
-                if (currMin.toString().length == 1) {currMin = "0" + currMin;}
-                var currTime = currHr + ":" + currMin;
-                var currIndex = 0;
-                var activated = false;
-
-                while (currIndex < activities.length - 1 && activities[currIndex+1].getElementsByClassName("activity-start")[0].value != "") {
-                    var nextTime = activities[currIndex+1].getElementsByClassName("activity-start")[0].value;
-                    if (currTime >= nextTime) {
-                        activities[currIndex].classList.remove("current");
-                        activities[currIndex].classList.add("past");
-                    } else if (currTime < nextTime && !activated) {
-                        activities[currIndex].classList.remove("past");
-                        activities[currIndex].classList.add("current");
-                        activated = true;
-                    } else {
-                        activities[currIndex].classList.remove("past");
-                        activities[currIndex].classList.remove("current");
+                if (!isEditing) {
+                    var activities = getValidActivities();
+                    var date = new Date();
+                    var currTime = getClockTime(date.getHours(), date.getMinutes());
+                    
+                    if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
+                    else clearStatus(last(activities));
+                    for (var i = 0; i < activities.length - 1; i++) {
+                        var time = getInput(activities[i+1], "activity-start").value;
+                        var timeNext = getInput(activities[i+1], "activity-start").value;
+                        if (currTime >= time) {
+                            if (currTime < timeNext) updateCurrent(activities[i]);
+                            else updatePast(activities[i]);
+                        } else clearStatus(activities[i]);
                     }
-                    currIndex++;
                 }
-                activities[currIndex].classList.remove("past");
-                if (currTime < activities[0].getElementsByClassName("activity-start")[0].value) {
-                    activities[currIndex].classList.remove("current");
-                } else if (!activated) {
-                    activities[currIndex].classList.add("current");
-                }
+            }
+            function getClockTime(hr, min) {
+                if (hr.toString().length == 1) hr = "0" + hr;
+                if (min.toString().length == 1) min = "0" + min;
+                return hr + ":" + min;
+            }
+            function updateCurrent(activity) {
+                activity.classList.remove("past");
+                activity.classList.add("current");
+            }
+            function updatePast(activity) {
+                activity.classList.add("past");
+                activity.classList.remove("current");
+            }
+            function clearStatus(activity) {
+                activity.classList.remove("past");
+                activity.classList.remove("current");
             }
         </script>
 
@@ -187,113 +248,62 @@
 
                 activityList.appendChild(newActivity);
                 saveList();
-            };
+            }
 
             function insertActivity(activity) {
                 var temp = activity.cloneNode(true);
                 $(activity).remove();
-                var tempTime = temp.getElementsByClassName("activity-start")[0].value;
-                var activities = activityList.getElementsByClassName("list-group-item");
+                var activities = getValidActivities();
+                var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
-                
-                while(index < activities.length && tempTime > activities[index].getElementsByClassName("activity-start")[0].value) {
-                    index++;
-                }
-                if (index == activities.length) {
-                    activityList.appendChild(temp);
-                } else {
-                    activityList.insertBefore(temp, activities[index]);
-                }
+                while (index < activities.length && tempTime > getInput(activities[index], "activity-start").value) index++;
+                if (index == activities.length) $(last(activities)).after(temp);
+                else activityList.insertBefore(temp, activities[index]);
 
                 updateDuration(index);
-                if (index != 0) {
-                    updateDuration(index-1);
-                }
+                if (index != 0) updateDuration(index-1);
 
                 activateCallBackFunctions(temp);
                 saveList();
-            };
-
-            function updateDuration(index) {
-                var activities = activityList.getElementsByClassName("list-group-item");
-                activities[activities.length-1].getElementsByClassName("activity-duration")[0].value = "";
-                if (index < activities.length-1) {
-                    var currStart = activities[index].getElementsByClassName("activity-start")[0].value;
-                    var nextStart = activities[index+1].getElementsByClassName("activity-start")[0].value;
-                    if (nextStart == "" || !isValidInput(nextStart)) {
-                        activities[index].getElementsByClassName("activity-duration")[0].value = "";
-                    } else {
-                        activities[index].getElementsByClassName("activity-duration")[0].value = timeDifference(currStart, nextStart);
-                    }
-                }
-            }
-            function timeDifference(curr, next) {
-                var hrDiff = next.substring(0, 2) - curr.substring(0, 2);
-                var minDiff = next.substring(3, 5) - curr.substring(3, 5);
-                if (minDiff < 0) {
-                    minDiff += 60;
-                    hrDiff--;
-                }
-                if (hrDiff.toString().length == 1) {hrDiff = "0" + hrDiff;}
-                if (minDiff.toString().length == 1) {minDiff = "0" + minDiff;}
-                return hrDiff + ":" + minDiff;
-            }
-
-            function saveList() {
-                var starts = inputValueArray("activity-start");
-                var names = inputValueArray("activity-name");                  
-                var durations = inputValueArray("activity-duration");
-                localStorage.setItem("store-start-sched", JSON.stringify(starts));
-                localStorage.setItem("store-name-sched", JSON.stringify(names));
-                localStorage.setItem("store-duration-sched", JSON.stringify(durations));
-            };
-            function inputValueArray(inputClass) {
-                var a = [];
-                var inputs = activityList.getElementsByClassName(inputClass);
-                for (var i = 0; i < inputs.length; i++) {
-                    a.push(inputs[i].value);
-                }
-                return a;
             }
 
             function activateCallBackFunctions(activity) {
-                var nameInput = activity.getElementsByClassName("activity-name")[0];
-                nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") {
-                        saveList();
-                    }
-                });
-                var startInput = activity.getElementsByClassName("activity-start")[0];
-                startInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") {
-                        if(isValidInput(activity.getElementsByClassName("activity-start")[0].value)) {
-                            insertActivity(activity);
-                        } else {
-                            var alert = document.createElement("DIV");
-                            alert.style = "text-align: center; margin-bottom: 0px";
-                            alert.classList.add("alert", "alert-danger", "alert-dismissible", "show", "fade")
-                            alert.setAttribute("role", "alert");
-                            alert.innerHTML = "<strong>Invalid input</strong>. Must be in format XX:XX (ex. 07:30)" +
-                                "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
-                                    "<span aria-hidden=\"true\">&times;</span>" +
-                                "</button>";
-                            $(activity).after(alert);
-                        }
-                    }
-                });
                 var clockpicker = activity.getElementsByClassName("clockpicker")[0];
-                $(clockpicker).clockpicker({afterDone: function() {
-                    insertActivity(activity);  
-                }});
-            }
+                $(clockpicker).clockpicker();
 
-            function isValidInput(value) {
-                if (value.length != 5) {return false;}
-                hrInput = value.substring(0, 2);
-                minInput = value.substring(3, 5);
-                if (isNaN(hrInput) || isNaN(minInput)) {return false;}
-                if (value[2] != ':') {return false;}
-                return true;
+                var nameInput = getInput(activity, "activity-name");
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                });
+                nameInput.onblur = function() { saveList(); };
+
+                var startInput = getInput(activity, "activity-start");
+                startInput.addEventListener("keyup", function(event) { 
+                    if (event.key === "Enter") $(startInput).trigger("blur");
+                });
+                startInput.onfocus = function() { isEditing = true; };
+                startInput.onblur = function() {   
+                    isEditing = false;
+                    checkTimeInput(activity);
+                };
+            }
+            function checkTimeInput(activity) {
+                $(".alert").alert('close');
+                if (isValidInput(getInput(activity, "activity-start").value)) insertActivity(activity);
+                else {
+                    var alert = document.createElement("DIV");
+                    alert.style = "text-align: center; margin-bottom: 0px";
+                    alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
+                    alert.setAttribute("role", "alert");
+                    alert.innerHTML = "<strong>Invalid input</strong>. Must be in format XX:XX (ex. 07:30)" +
+                        "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                            "<span aria-hidden=\"true\">&times;</span>" +
+                        "</button>";
+                    $(activity).after(alert);
+
+                    var index = getIndex(activity);
+                    getInput(activity, "activity-start").value = JSON.parse(localStorage.getItem("store-start-sched"))[index];
+                }
             }
         </script>
 

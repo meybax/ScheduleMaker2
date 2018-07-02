@@ -485,9 +485,9 @@
 			}
 		});
 
-		// Hide when ESC is pressed
+		// Hide when ENTER is pressed
 		$doc.on('keyup.clockpicker.' + this.id, function(e){
-			if (e.keyCode === 27) {
+			if (e.keyCode === 13) {
 				self.hide();
 			}
 		});
