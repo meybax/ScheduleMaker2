@@ -355,9 +355,9 @@
 		raiseCallback(this.options.init);
 	}
 
-	function raiseCallback(callbackFunction) {
+	function raiseCallback(callbackFunction, param) {
 		if (callbackFunction && typeof callbackFunction === "function") {
-			callbackFunction();
+			callbackFunction(param);
 		}
 	}
 
@@ -485,14 +485,14 @@
 			}
 		});
 
-		// Hide when ENTER is pressed
+		// Hide when ESC is pressed
 		$doc.on('keyup.clockpicker.' + this.id, function(e){
-			if (e.keyCode === 13) {
+			if (e.keyCode === 27) {
 				self.hide();
 			}
 		});
 
-		raiseCallback(this.options.afterShow);
+		raiseCallback(this.options.afterShow, self);
 	};
 
 	// Hide popover

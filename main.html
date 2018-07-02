@@ -256,9 +256,11 @@
                 var activities = getValidActivities();
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
-                while (index < activities.length && tempTime > getInput(activities[index], "activity-start").value) index++;
-                if (index == activities.length) $(last(activities)).after(temp);
-                else activityList.insertBefore(temp, activities[index]);
+                if (activities.length > 0) {
+                    while (index < activities.length && tempTime > getInput(activities[index], "activity-start").value) index++;
+                    if (index == activities.length) $(last(activities)).after(temp);
+                    else activityList.insertBefore(temp, activities[index]);
+                } else activityList.insertBefore(temp, activityList.firstChild);
 
                 updateDuration(index);
                 if (index != 0) updateDuration(index-1);
@@ -269,7 +271,10 @@
 
             function activateCallBackFunctions(activity) {
                 var clockpicker = activity.getElementsByClassName("clockpicker")[0];
-                $(clockpicker).clockpicker();
+                var popover;
+                $(clockpicker).clockpicker({
+                    afterShow: function(self) { popover = self; }
+                });
 
                 var nameInput = getInput(activity, "activity-name");
                 nameInput.addEventListener("keyup", function(event) {
@@ -279,10 +284,11 @@
 
                 var startInput = getInput(activity, "activity-start");
                 startInput.addEventListener("keyup", function(event) { 
-                    if (event.key === "Enter") $(startInput).trigger("blur");
+                    if (event.key === "Enter") { $(startInput).trigger("blur"); }
                 });
                 startInput.onfocus = function() { isEditing = true; };
-                startInput.onblur = function() {   
+                startInput.onblur = function() {
+                    popover.hide();
                     isEditing = false;
                     checkTimeInput(activity);
                 };
