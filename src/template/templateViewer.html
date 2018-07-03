@@ -24,11 +24,31 @@
         <script src="../js/script.js"></script>
         <!-- Global Functions -->
         <script type="text/javascript">
+
+            var templateList, templateTemplate; 
                         
-            // loads stored schedule when window is opened
             window.onload = function() {
-                
+                templateList = document.getElementById("template-list");
+                templateTemplate = document.getElementById("template-template").cloneNode(true);
+                templateTemplate.style.display = "block";
+                templateTemplate.id = "templateID-";
+                if (localStorage.getItem("template-names")) {
+                    var names = JSON.parse(localStorage.getItem("template-names"));
+                    for (var i = 0; i < names.length; i++) {
+                        // uses data to recreate activity list
+                        var newTemplate = templateTemplate.cloneNode(true);
+                        getInput(newTemplate, "template-name").value = names[i];
+                        newTemplate.id = "templateID-" + names[i];
+                        createTemplate(newTemplate);
+                    } 
+                } 
+                if (!templateList.firstChild) createTemplate(templateTemplate);
             };
+
+            function saveList() {
+                var names = inputValueArray(templateList, "template-name");
+                localStorage.setItem("template-names", JSON.stringify(names));
+            }
 
         </script>
 
@@ -64,7 +84,54 @@
                     <a class="nav-link" href="../academicPlanner.html">Academic Planner</a>
                 </li>
             </ul>
+            <button class="btn btn-success order-3 btn-lg" type="button" onclick="createTemplate(templateTemplate)">New Template</button>
         </nav>
+        <script type="text/javascript">
+            function createTemplate(template) {
+                var newTemplate = template.cloneNode(true);
+                activateCallBackFunctions(newTemplate);
+
+                templateList.appendChild(newTemplate);
+                saveList();
+            }
+
+            function activateCallBackFunctions(template) {
+                var nameInput = getInput(template, "template-name");
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                });
+                nameInput.onblur = function() { 
+                    changeTemplateName(nameInput, template); 
+                    saveList();
+                };
+            }
+        </script>
+
+        <!-- Template Template -->
+        <li class="list-group-item text-light" style="display: none;" id="template-template"> 
+            <div class="row">
+                <div class="col-sm text-center">
+                    <input type="text" class="form-control-plaintext template-name" placeholder="Name" style="margin-left: 10px">
+                </div>
+                <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="remove(this.parentNode.parentNode)">
+                    <span aria-hidden="true" style="color: gray;">&times;</span>
+                </button>
+            </div>
+        </li>
+        <script type="text/javascript">
+            // function to delete template when closed
+            function remove(template) {
+                var index = getIndex(template, templateList.getElementsByTagName("LI"));
+                $(template).remove();
+                if (templateList.getElementsByTagName("LI")[0] == null) createTemplate(templateTemplate);
+                saveList();
+            };
+        </script>
+
+        <!-- Template List -->
+        <div class="after-header">
+            <ul class="list-group list-group-flush" id="template-list" style="font-size: 20px;"></ul>
+        </div>
 
     </body>
 

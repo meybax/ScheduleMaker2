@@ -52,9 +52,8 @@
                         getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
-                } else {
-                    addActivity(templateActivity);
-                }
+                } 
+                if (!activityList.firstChild) addActivity(templateActivity);
                 
                 (function updateStatus() {
                     if (!isEditing) {
@@ -101,19 +100,12 @@
 
             // function to store schedule in local storage
             function saveList() {
-                var starts = inputValueArray("activity-start");
-                var names = inputValueArray("activity-name");                  
-                var durations = inputValueArray("activity-duration");
+                var starts = inputValueArray(activityList, "activity-start");
+                var names = inputValueArray(activityList, "activity-name");                  
+                var durations = inputValueArray(activityList, "activity-duration");
                 localStorage.setItem("store-start-sched", JSON.stringify(starts));
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
                 localStorage.setItem("store-duration-sched", JSON.stringify(durations));
-            }
-            // saveList helper function to retrieve array of input values
-            function inputValueArray(inputClass) {
-                var a = [];
-                var inputs = activityList.getElementsByClassName(inputClass);
-                for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
-                return a;
             }
             
             // function to iterate through activities to change the duration
@@ -162,20 +154,6 @@
                 return true;
             }
             
-            // function to return the index value of a child node
-            function getIndex(node) {
-                var childs = node.parentNode.childNodes;
-                for (i = 0; i < childs.length; i++) { if (node == childs[i]) break; }
-                return i;
-            }
-            
-            // function to return the last element of a list with shorter syntax
-            function last(list) {
-                return list[list.length-1];
-            }
-            
-            // function to retrieve the input element with shorter syntax
-            function getInput(activity, className) { return activity.getElementsByClassName(className)[0]; }
         </script>
 
     </head>
@@ -234,7 +212,6 @@
         <script type="text/javascript">
             // function to delete activity when closed
             function remove(activity) {
-                var index = getIndex(activity);
                 $(activity).remove();
                 if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
                 updateDuration();
@@ -329,7 +306,7 @@
                     $(activity).after(alert);
                     
                     // reverts invalid input back to previously valid input
-                    var index = getIndex(activity);
+                    var index = getIndex(activity, activityList.getElementsByTagName("LI"));
                     getInput(activity, "activity-start").value = JSON.parse(localStorage.getItem("store-start-sched"))[index];
                 }
             }
