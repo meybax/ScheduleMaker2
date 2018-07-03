@@ -29,9 +29,15 @@
 
         <!-- Global Functions -->
         <script type="text/javascript">
+
+            var isEditing = false;  // variable checking whether the user is editing the start time
+            var activityList, templateActivity;        
                        
             // loads stored schedule when window is opened
             window.onload = function() {
+                activityList = document.getElementById("activity-list");
+                templateActivity = document.getElementById("template-activity").cloneNode(true);
+                templateActivity.style.display = "block";
                 if (localStorage.getItem("store-start-sched")) {
                     // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-sched"));
@@ -49,7 +55,48 @@
                 } else {
                     addActivity(templateActivity);
                 }
+                (function updateStatus() {
+                    if (!isEditing) {
+                        var activities = getValidActivities();
+                        var date = new Date();
+                        var currTime = getClockTime(date.getHours(), date.getMinutes());
+                        
+                        // iterates through list to identify the current activity,
+                        // dim past activities,
+                        // and clear the remaining activiites
+                        if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
+                        else clearStatus(last(activities));
+                        for (var i = 0; i < activities.length - 1; i++) {
+                            var time = getInput(activities[i], "activity-start").value;
+                            var timeNext = getInput(activities[i+1], "activity-start").value;
+                            if (currTime >= time) {
+                                if (currTime < timeNext) updateCurrent(activities[i]);
+                                else updatePast(activities[i]);
+                            } else clearStatus(activities[i]);
+                        }
+                    }
+                    setTimeout(updateStatus, 100);
+                })();
             };
+            // function to convert raw numbers into clock time string
+            function getClockTime(hr, min) {
+                if (hr.toString().length == 1) hr = "0" + hr;
+                if (min.toString().length == 1) min = "0" + min;
+                return hr + ":" + min;
+            }
+            // updateStatus helper functions to change classes
+            function updateCurrent(activity) {
+                activity.classList.remove("past");
+                activity.classList.add("current");
+            }
+            function updatePast(activity) {
+                activity.classList.add("past");
+                activity.classList.remove("current");
+            }
+            function clearStatus(activity) {
+                activity.classList.remove("past");
+                activity.classList.remove("current");
+            }
 
             // function to store schedule in local storage
             function saveList() {
@@ -67,6 +114,7 @@
                 for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
                 return a;
             }
+            
             // function to iterate through activities to change the duration
             function updateDuration() {
                 var activities = getValidActivities();
@@ -197,56 +245,6 @@
         <div class="after-header">
             <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px;"></ul>
         </div>
-        <script type="text/javascript">
-            // initializes global variables of activity list and template activity
-            var activityList = document.getElementById("activity-list");
-            var templateActivity = document.getElementById("template-activity").cloneNode(true);
-            templateActivity.style.display = "block";
-            
-            // function to highlight current activity and dim past activity
-            var isEditing = false;  // variable checking whether the user is editing the start time
-            setInterval(updateStatus, 100);
-            function updateStatus() {
-                if (!isEditing) {
-                    var activities = getValidActivities();
-                    var date = new Date();
-                    var currTime = getClockTime(date.getHours(), date.getMinutes());
-                    
-                    // iterates through list to identify the current activity,
-                    // dim past activities,
-                    // and clear the remaining activiites
-                    if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
-                    else clearStatus(last(activities));
-                    for (var i = 0; i < activities.length - 1; i++) {
-                        var time = getInput(activities[i], "activity-start").value;
-                        var timeNext = getInput(activities[i+1], "activity-start").value;
-                        if (currTime >= time) {
-                            if (currTime < timeNext) updateCurrent(activities[i]);
-                            else updatePast(activities[i]);
-                        } else clearStatus(activities[i]);
-                    }
-                }
-            }
-            // function to convert raw numbers into clock time string
-            function getClockTime(hr, min) {
-                if (hr.toString().length == 1) hr = "0" + hr;
-                if (min.toString().length == 1) min = "0" + min;
-                return hr + ":" + min;
-            }
-            // updateStatus helper functions to change classes
-            function updateCurrent(activity) {
-                activity.classList.remove("past");
-                activity.classList.add("current");
-            }
-            function updatePast(activity) {
-                activity.classList.add("past");
-                activity.classList.remove("current");
-            }
-            function clearStatus(activity) {
-                activity.classList.remove("past");
-                activity.classList.remove("current");
-            }
-        </script>
 
         <!-- Add Activity Button -->
         <div class="container-fluid text-center" style="margin-top: 10px">
