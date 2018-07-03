@@ -33,7 +33,7 @@
             var isEditing = false;  // variable checking whether the user is editing the start time
             var activityList, templateActivity;        
                        
-            // loads stored schedule when window is opened
+            // loads stored schedule and starts updating status when window is opened
             window.onload = function() {
                 activityList = document.getElementById("activity-list");
                 templateActivity = document.getElementById("template-activity").cloneNode(true);
@@ -55,6 +55,7 @@
                 } else {
                     addActivity(templateActivity);
                 }
+                
                 (function updateStatus() {
                     if (!isEditing) {
                         var activities = getValidActivities();
