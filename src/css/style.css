@@ -5,6 +5,8 @@ input {
 }
 input:focus{ outline: none; }
 
+button:focus{ outline: none; }
+
 ::placeholder {
     color: springgreen;
     opacity: 0.75;
@@ -15,3 +17,6 @@ input:focus{ outline: none; }
     border-bottom-color: white;
     background-color: black;
 }
+
+.activity-start { color: lime; }
+.activity-duration { color: cyan;}

@@ -4,7 +4,7 @@ function changeTemplateName(nameInput, listItem) {
     $(".alert").alert('close');
     if (nameInput.value != "") {
         var templateNames = JSON.parse(localStorage.getItem("template-names"));
-        for (var i = 0; i < templateNames[i]; i++) {
+        for (var i = 0; i < templateNames.length; i++) {
             if (nameInput.value == templateNames[i]) {
                 raiseTemplateAlert(nameInput, listItem);
                 return;
@@ -13,6 +13,7 @@ function changeTemplateName(nameInput, listItem) {
         var temp = listItem.id;
         listItem.id = "templateID-" + nameInput.value;
         moveTemplateData(temp, listItem.id);
+        return temp;
     }
 }
 function raiseTemplateAlert(nameInput, listItem) {
@@ -31,19 +32,19 @@ function raiseTemplateAlert(nameInput, listItem) {
     }
 }
 function moveTemplateData(prev, curr) {
+    if (localStorage.getItem("store-start-"+prev)) {
+        localStorage.setItem("store-start-"+curr, localStorage.getItem("store-start-"+prev));
+        localStorage.setItem("store-name-"+curr, localStorage.getItem("store-name-"+prev));
+        removeTemplateData("store-start-"+prev);
+        removeTemplateData("store-name-"+prev);
 
+    }
 }
-// function updateTemplateNames(prev, curr) {
-//     var names = JSON.parse(localStorage.getItem("template-names"));
-//     names[getIndex(prev.substring(11), names)] = curr.substring(11);
-//     localStorage.setItem("template-names", JSON.stringify(names));
-// }
-
-function inputValueArray(list, inputClass) {
-    var a = [];
-    var inputs = list.getElementsByClassName(inputClass);
-    for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
-    return a;
+function removeTemplateData(id) {
+    if (localStorage.getItem("store-start-"+id)) {
+        localStorage.removeItem("store-start-"+id);
+        localStorage.removeItem("store-name-"+id);
+    }
 }
 
 // function to return the index value of a child node

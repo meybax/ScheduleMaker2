@@ -17,8 +17,6 @@
         <style>
             .current { background-color:  rgb(25, 25, 200); }
             .past { opacity: 0.5; }
-            .activity-start { color: lime; }
-            .activity-duration { color: cyan;}
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
@@ -42,14 +40,12 @@
                     // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-sched"));
                     var names = JSON.parse(localStorage.getItem("store-name-sched"));
-                    var durations = JSON.parse(localStorage.getItem("store-duration-sched"));
 
                     for (var i = 0; i < starts.length; i++) {
                         // uses data to recreate activity list
                         var newActivity = templateActivity.cloneNode(true);
                         getInput(newActivity, "activity-start").value = starts[i];
                         getInput(newActivity, "activity-name").value = names[i];
-                        getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
                 } 
@@ -102,10 +98,14 @@
             function saveList() {
                 var starts = inputValueArray(activityList, "activity-start");
                 var names = inputValueArray(activityList, "activity-name");                  
-                var durations = inputValueArray(activityList, "activity-duration");
                 localStorage.setItem("store-start-sched", JSON.stringify(starts));
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
-                localStorage.setItem("store-duration-sched", JSON.stringify(durations));
+            }
+            function inputValueArray(list, inputClass) {
+                var a = [];
+                var inputs = list.getElementsByClassName(inputClass);
+                for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
+                return a;
             }
             
             // function to iterate through activities to change the duration
@@ -147,10 +147,11 @@
             // function to check if an input value is a valid time
             function isValidInput(value) {
                 if (value.length != 5) { return false; }
+                if (value[2] != ':') { return false; }
                 hrInput = value.substring(0, 2);
                 minInput = value.substring(3, 5);
                 if (isNaN(hrInput) || isNaN(minInput)) { return false; }
-                if (value[2] != ':') { return false; }
+                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) { return false; }
                 return true;
             }
             
@@ -185,7 +186,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="academicPlanner.html">Academic Planner</a>
+                    <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
         </nav>
@@ -216,7 +217,7 @@
                 if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
                 updateDuration();
                 saveList();
-            };
+            }
         </script>
 
         <!-- Activity List -->
@@ -235,6 +236,7 @@
                 activateCallBackFunctions(newActivity);
 
                 activityList.appendChild(newActivity);
+                updateDuration();
                 saveList();
             }
             

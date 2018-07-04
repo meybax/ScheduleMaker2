@@ -15,6 +15,11 @@
         <link href="../css/style.css" rel="stylesheet">
         <!-- General CSS Style -->
         <style>
+            input { 
+                text-align: center; 
+                color: white;
+                font-size: 50px;
+            }
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
@@ -46,8 +51,14 @@
             };
 
             function saveList() {
-                var names = inputValueArray(templateList, "template-name");
+                var names = getIdArray(templateList);
                 localStorage.setItem("template-names", JSON.stringify(names));
+            }
+            function getIdArray(list) {
+                var a = [];
+                list = list.getElementsByTagName("LI");
+                for (var i = 0; i < list.length; i++) a.push(list[i].id.substring(11));
+                return a;
             }
 
         </script>
@@ -81,7 +92,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../academicPlanner.html">Academic Planner</a>
+                    <a class="nav-link" href="../planner.html">Planner</a>
                 </li>
             </ul>
             <button class="btn btn-success order-3 btn-lg" type="button" onclick="createTemplate(templateTemplate)">New Template</button>
@@ -94,7 +105,6 @@
                 templateList.appendChild(newTemplate);
                 saveList();
             }
-
             function activateCallBackFunctions(template) {
                 var nameInput = getInput(template, "template-name");
                 nameInput.addEventListener("keyup", function(event) {
@@ -108,21 +118,57 @@
         </script>
 
         <!-- Template Template -->
-        <li class="list-group-item text-light" style="display: none;" id="template-template"> 
+        <li class="list-group-item text-light" style="display: none;" id="template-template" ondblclick="loadTemplateEditor(this)"> 
             <div class="row">
                 <div class="col-sm text-center">
                     <input type="text" class="form-control-plaintext template-name" placeholder="Name" style="margin-left: 10px">
                 </div>
-                <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="remove(this.parentNode.parentNode)">
+                <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="confirm(this.parentNode.parentNode.id)">
                     <span aria-hidden="true" style="color: gray;">&times;</span>
                 </button>
             </div>
         </li>
+        <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    The template will be permanently deleted.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="remove()">Delete</button>
+                </div>
+                </div>
+            </div>
+        </div>
         <script type="text/javascript">
-            // function to delete template when closed
-            function remove(template) {
+            function loadTemplateEditor(template) {
+                var name = template.id.substring(11);
+                if (name) {
+                    localStorage.setItem("edit-template", name);
+                    window.open("templateEditor.html", "_self");
+                }
+            }
+            
+            function confirm(id) {
+                var modal = document.getElementsByClassName("modal")[0];
+                modal.id = "modal-"+id;
+                $(modal).modal('show');
+            }
+            function remove() {
+                var modal = document.getElementsByClassName("modal")[0];
+                $(modal).modal('hide');
+                var id = modal.id.substring(6);
+                var template = document.getElementById(id);
                 var index = getIndex(template, templateList.getElementsByTagName("LI"));
                 $(template).remove();
+                removeTemplateData(template.id);
                 if (templateList.getElementsByTagName("LI")[0] == null) createTemplate(templateTemplate);
                 saveList();
             };
