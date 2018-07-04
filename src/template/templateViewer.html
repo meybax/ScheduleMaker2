@@ -118,14 +118,20 @@
         </script>
 
         <!-- Template Template -->
-        <li class="list-group-item text-light" style="display: none;" id="template-template" ondblclick="loadTemplateEditor(this)"> 
+        <li class="list-group-item text-light" style="display: none;" id="template-template"> 
             <div class="row">
-                <div class="col-sm text-center">
-                    <input type="text" class="form-control-plaintext template-name" placeholder="Name" style="margin-left: 10px">
-                </div>
-                <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="confirm(this.parentNode.parentNode.id)">
+                <button type="button" class="close" aria-label="Close" style="margin-left: 30px;" onclick="confirm(this.parentNode.parentNode.id)">
                     <span aria-hidden="true" style="color: gray;">&times;</span>
-                </button>
+                </button>  
+                <div class="col-sm"></div>
+                <div class="col-sm text-center">
+                    <input type="text" class="form-control-plaintext template-name" placeholder="Name" style="padding-right: 80px">
+                </div>
+                <div class="col-sm">
+                    <button class="btn btn-info order-3 btn-lg" type="button" onclick="loadTemplateEditor(this.parentNode.parentNode.parentNode)" style='position: absolute;top: 50%;left: 80%;transform: translate(-50%, -50%)'>
+                        Edit
+                    </button>
+                </div>
             </div>
         </li>
         <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">

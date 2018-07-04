@@ -14,7 +14,7 @@ function changeTemplateName(nameInput, listItem) {
         listItem.id = "templateID-" + nameInput.value;
         moveTemplateData(temp, listItem.id);
         return temp;
-    }
+    } else nameInput.value = listItem.id.substring(11);
 }
 function raiseTemplateAlert(nameInput, listItem) {
     var prev = listItem.id.substring(11);
