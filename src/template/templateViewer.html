@@ -156,10 +156,22 @@
         </div>
         <script type="text/javascript">
             function loadTemplateEditor(template) {
+                $(".alert").alert("close");
                 var name = template.id.substring(11);
                 if (name) {
                     localStorage.setItem("edit-template", name);
                     window.open("templateEditor.html", "_self");
+                } else {
+                        // creates alert element
+                        var alert = document.createElement("DIV");
+                        alert.style = "text-align: center; margin-bottom: 0px";
+                        alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
+                        alert.setAttribute("role", "alert");
+                        alert.innerHTML = "<strong>Unable to edit template.</strong> Please name the template" +
+                            "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                                "<span aria-hidden=\"true\">&times;</span>" +
+                            "</button>";
+                        $(template).after(alert);
                 }
             }
             
@@ -178,7 +190,7 @@
                 removeTemplateData(template.id);
                 if (templateList.getElementsByTagName("LI")[0] == null) createTemplate(templateTemplate);
                 saveList();
-            };
+            }
         </script>
 
         <!-- Template List -->

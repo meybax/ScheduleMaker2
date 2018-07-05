@@ -24,7 +24,7 @@ function raiseTemplateAlert(nameInput, listItem) {
         alert.style = "text-align: center; margin-bottom: 0px";
         alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
         alert.setAttribute("role", "alert");
-        alert.innerHTML = "<strong>Name already exists</strong>. Please use a new name." +
+        alert.innerHTML = "<strong>Name already exists.</strong> Please use a new name." +
             "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
                 "<span aria-hidden=\"true\">&times;</span>" +
             "</button>";
