@@ -161,7 +161,15 @@
                     <a class="nav-link" href="../planner.html">Planner</a>
                 </li>
             </ul>
+            <button class="btn btn-primary order-3 btn-lg" type="button" onclick="loadTemplate()">Load Template</button>
         </nav>
+        <script type="text/javascript">
+            function loadTemplate() {
+                localStorage.setItem("store-start-sched", localStorage.getItem("store-start-"+templateName.id));
+                localStorage.setItem("store-name-sched", localStorage.getItem("store-name-"+templateName.id));
+                window.open("../main.html", "_self");
+            }
+        </script>
 
         <!-- Template Activity -->
         <li class="list-group-item text-light" style="display: none;" id="template-activity"> 
@@ -189,7 +197,7 @@
                     if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
                     updateDuration();
                     saveList();
-                };
+                }
             </script>
     
             <div class="after-header">
