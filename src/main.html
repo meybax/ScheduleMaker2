@@ -57,18 +57,20 @@
                         var date = new Date();
                         var currTime = getClockTime(date.getHours(), date.getMinutes());
                         
-                        // iterates through list to identify the current activity,
-                        // dim past activities,
-                        // and clear the remaining activiites
-                        if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
-                        else clearStatus(last(activities));
-                        for (var i = 0; i < activities.length - 1; i++) {
-                            var time = getInput(activities[i], "activity-start").value;
-                            var timeNext = getInput(activities[i+1], "activity-start").value;
-                            if (currTime >= time) {
-                                if (currTime < timeNext) updateCurrent(activities[i]);
-                                else updatePast(activities[i]);
-                            } else clearStatus(activities[i]);
+                        if (activities.length > 0) {
+                            // iterates through list to identify the current activity,
+                            // dim past activities,
+                            // and clear the remaining activiites
+                            if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
+                            else clearStatus(last(activities));
+                            for (var i = 0; i < activities.length - 1; i++) {
+                                var time = getInput(activities[i], "activity-start").value;
+                                var timeNext = getInput(activities[i+1], "activity-start").value;
+                                if (currTime >= time) {
+                                    if (currTime < timeNext) updateCurrent(activities[i]);
+                                    else updatePast(activities[i]);
+                                } else clearStatus(activities[i]);
+                            }
                         }
                     }
                     setTimeout(updateStatus, 100);
@@ -116,7 +118,7 @@
                     var timeNext = getInput(activities[i+1], "activity-start").value;
                     getInput(activities[i], "activity-duration").value = timeDifference(time, timeNext);
                 }
-                getInput(last(activities), "activity-duration").value = "";
+                if (activities.length > 0) getInput(last(activities), "activity-duration").value = "";
             }
             // updateDuration helper function to calculate time difference
             function timeDifference(curr, next) {

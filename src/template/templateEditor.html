@@ -88,7 +88,7 @@
                     var timeNext = getInput(activities[i+1], "activity-start").value;
                     getInput(activities[i], "activity-duration").value = timeDifference(time, timeNext);
                 }
-                getInput(last(activities), "activity-duration").value = "";
+                if (activities.length > 0) getInput(last(activities), "activity-duration").value = "";
             }
             // updateDuration helper function to calculate time difference
             function timeDifference(curr, next) {
@@ -219,6 +219,7 @@
     
                     activityList.appendChild(newActivity);
                     updateDuration();
+                    console.log("saved.");
                     saveList();
                 }
                 
