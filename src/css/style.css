@@ -1,9 +1,9 @@
-input { 
+input, textarea { 
     text-align: center; 
     color: white;
     font-size: 30px;
 }
-input:focus{ outline: none; }
+input, textarea:focus{ outline: none; }
 
 button:focus{ outline: none; }
 

@@ -33,10 +33,12 @@
             var templateList, templateTemplate; 
                         
             window.onload = function() {
+                // initializes variables containing the template list and the template for templates
                 templateList = document.getElementById("template-list");
                 templateTemplate = document.getElementById("template-template").cloneNode(true);
                 templateTemplate.style.display = "block";
                 templateTemplate.id = "templateID-";
+                // loads any existing templates
                 if (localStorage.getItem("template-names")) {
                     var names = JSON.parse(localStorage.getItem("template-names"));
                     for (var i = 0; i < names.length; i++) {
@@ -49,7 +51,8 @@
                 } 
                 if (!templateList.firstChild) createTemplate(templateTemplate);
             };
-
+            
+            // function to save template list to local storage
             function saveList() {
                 var names = getIdArray(templateList);
                 localStorage.setItem("template-names", JSON.stringify(names));
@@ -68,7 +71,7 @@
     <body style="background-color: black">
 
        <!-- Navbar -->
-       <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px;">
+       <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" data-spy="affix" style="font-size: 30px;">
             <a class="navbar-brand" href="../main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
@@ -82,13 +85,13 @@
                     To-Do List
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" onclick="loadToDoList('day')" href="../toDoList.html">Day</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Day')" href="../toDoList.html">Day</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('week')" href="../toDoList.html">Week</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Week')" href="../toDoList.html">Week</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('month')" href="../toDoList.html">Month</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Month')" href="../toDoList.html">Month</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('year')" href="../toDoList.html">Year</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Year')" href="../toDoList.html">Year</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -98,6 +101,7 @@
             <button class="btn btn-success order-3 btn-lg" type="button" onclick="createTemplate(templateTemplate)">New Template</button>
         </nav>
         <script type="text/javascript">
+            // function to add a new template to the list
             function createTemplate(template) {
                 var newTemplate = template.cloneNode(true);
                 activateCallBackFunctions(newTemplate);
@@ -105,6 +109,7 @@
                 templateList.appendChild(newTemplate);
                 saveList();
             }
+            // function to activate call back functions for each new template
             function activateCallBackFunctions(template) {
                 var nameInput = getInput(template, "template-name");
                 nameInput.addEventListener("keyup", function(event) {
@@ -135,6 +140,7 @@
                 </div>
             </div>
         </li>
+        <!-- Confirmation Modal -->
         <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -155,6 +161,7 @@
             </div>
         </div>
         <script type="text/javascript">
+            // function to load the editor for a template
             function loadTemplateEditor(template) {
                 $(".alert").alert("close");
                 var name = template.id.substring(11);
@@ -162,7 +169,7 @@
                     localStorage.setItem("edit-template", name);
                     window.open("templateEditor.html", "_self");
                 } else {
-                        // creates alert element
+                        // creates alert element if unable to load
                         var alert = document.createElement("DIV");
                         alert.style = "text-align: center; margin-bottom: 0px";
                         alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
@@ -175,11 +182,13 @@
                 }
             }
             
+            // function to confirm deleting a template with modal
             function confirm(id) {
                 var modal = document.getElementsByClassName("modal")[0];
                 modal.id = "modal-"+id;
                 $(modal).modal('show');
             }
+            // function to remove template from template list
             function remove() {
                 var modal = document.getElementsByClassName("modal")[0];
                 $(modal).modal('hide');

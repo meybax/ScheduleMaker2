@@ -31,11 +31,12 @@
             var isEditing = false;  // variable checking whether the user is editing the start time
             var activityList, templateActivity;        
                        
-            // loads stored schedule and starts updating status when window is opened
             window.onload = function() {
+                // initializes variables containing the activity list and the template for activities
                 activityList = document.getElementById("activity-list");
                 templateActivity = document.getElementById("template-activity").cloneNode(true);
                 templateActivity.style.display = "block";
+                // loads stored schedule if exists
                 if (localStorage.getItem("store-start-sched")) {
                     // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-sched"));
@@ -51,6 +52,7 @@
                 } 
                 if (!activityList.firstChild) addActivity(templateActivity);
                 
+                // function to update the status of each activity
                 (function updateStatus() {
                     if (!isEditing) {
                         var activities = getValidActivities();
@@ -102,12 +104,6 @@
                 var names = inputValueArray(activityList, "activity-name");                  
                 localStorage.setItem("store-start-sched", JSON.stringify(starts));
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
-            }
-            function inputValueArray(list, inputClass) {
-                var a = [];
-                var inputs = list.getElementsByClassName(inputClass);
-                for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
-                return a;
             }
             
             // function to iterate through activities to change the duration
@@ -164,7 +160,7 @@
     <body style="background-color: black">
 
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-spy="affix" style="font-size: 30px;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" data-spy="affix" style="font-size: 30px;">
             <a class="navbar-brand" href="main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
@@ -178,13 +174,13 @@
                     To-Do List
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" onclick="loadToDoList('day')" href="toDoList.html">Day</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Day')" href="toDoList.html">Day</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('week')" href="toDoList.html">Week</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Week')" href="toDoList.html">Week</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('month')" href="toDoList.html">Month</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Month')" href="toDoList.html">Month</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('year')" href="toDoList.html">Year</a>
+                    <a class="dropdown-item" onclick="loadToDoList('Year')" href="toDoList.html">Year</a>
                     </div>
                 </li>
                 <li class="nav-item">

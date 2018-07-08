@@ -1,5 +1,7 @@
+// function to load different to-do lists
 function loadToDoList(type) { localStorage.setItem("list-type", type); }
 
+// function to read name input for templates and change if valid
 function changeTemplateName(nameInput, listItem) {
     $(".alert").alert('close');
     if (nameInput.value != "") {
@@ -16,6 +18,7 @@ function changeTemplateName(nameInput, listItem) {
         return temp;
     } else nameInput.value = listItem.id.substring(11);
 }
+// function to raise an alert if name input for a template is not valid
 function raiseTemplateAlert(nameInput, listItem) {
     var prev = listItem.id.substring(11);
     if (nameInput.value != prev) {
@@ -31,6 +34,7 @@ function raiseTemplateAlert(nameInput, listItem) {
         $(listItem).after(alert);  
     }
 }
+// function to move template data from one name to the other
 function moveTemplateData(prev, curr) {
     if (localStorage.getItem("store-start-"+prev)) {
         localStorage.setItem("store-start-"+curr, localStorage.getItem("store-start-"+prev));
@@ -40,6 +44,7 @@ function moveTemplateData(prev, curr) {
 
     }
 }
+// function to delete the data assigned to a template name
 function removeTemplateData(id) {
     if (localStorage.getItem("store-start-"+id)) {
         localStorage.removeItem("store-start-"+id);
@@ -60,3 +65,11 @@ function last(list) {
 
 // function to retrieve the input element with shorter syntax
 function getInput(listItem, className) { return listItem.getElementsByClassName(className)[0]; }
+
+// function to retrieve input values
+function inputValueArray(list, inputClass) {
+    var a = [];
+    var inputs = list.getElementsByClassName(inputClass);
+    for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
+    return a;
+}
