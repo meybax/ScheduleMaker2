@@ -1,6 +1,3 @@
-// function to load different to-do lists
-function loadToDoList(type) { localStorage.setItem("list-type", type); }
-
 // function to read name input for templates and change if valid
 function changeTemplateName(nameInput, listItem) {
     $(".alert").alert('close');

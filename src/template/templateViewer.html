@@ -80,19 +80,8 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="templateViewer.html">Templates</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    To-Do List
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" onclick="loadToDoList('Day')" href="../toDoList.html">Day</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Week')" href="../toDoList.html">Week</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Month')" href="../toDoList.html">Month</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Year')" href="../toDoList.html">Year</a>
-                    </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="../toDoList.html">To-Do List</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="../planner.html">Planner</a>
@@ -127,14 +116,14 @@
             <div class="row">
                 <div class="col-sm">
                     <button type="button" class="close" aria-label="Close" style="position: absolute;top: 50%;left: 10%;transform: translate(-50%, -50%);" onclick="confirm(this.parentNode.parentNode.parentNode.id)">
-                        <span aria-hidden="true" style="color: gray;">&times;</span>
+                        <span aria-hidden="true" style="color: red;">&times;</span>
                     </button>  
                 </div>
-                <div class="col-sm text-center">
-                    <input type="text" class="form-control-plaintext template-name" placeholder="Name">
+                <div class="col-sm" style="margin-left: -38%;">
+                    <input type="text" class="form-control-plaintext template-name" placeholder="Name" style="text-align: left">
                 </div>
                 <div class="col-sm">
-                    <button class="btn btn-info order-3 btn-lg" type="button" onclick="loadTemplateEditor(this.parentNode.parentNode.parentNode)" style="position: absolute;top: 50%;right: 10%;transform: translate(-50%, -50%);">
+                    <button class="btn btn-info order-3 btn-lg" type="button" onclick="loadTemplateEditor(this.parentNode.parentNode.parentNode)" style="position: absolute; top: 50%; right: 0%;transform: translate(-50%, -50%);">
                         Edit
                     </button>
                 </div>
@@ -176,7 +165,7 @@
                         alert.setAttribute("role", "alert");
                         alert.innerHTML = "<strong>Unable to edit template.</strong> Please name the template" +
                             "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
-                                "<span aria-hidden=\"true\">&times;</span>" +
+                                "<span aria-hidden=\"true\" style=\"color:red\">&times;</span>" +
                             "</button>";
                         $(template).after(alert);
                 }

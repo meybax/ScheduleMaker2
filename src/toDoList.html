@@ -20,6 +20,7 @@
 
         <!-- Javascript Libraries/Plug-ins -->
         <script src="js/jquery.js"></script>
+        <script src="js/jquery-ui.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="js/clockpicker.js"></script>
         <script src="js/script.js"></script>
@@ -29,9 +30,6 @@
             var templateTask, taskList, listType;
                         
             window.onload = function() {
-                listType = "Day";
-                if (localStorage.getItem("list-type")) listType = localStorage.getItem("list-type");
-                document.getElementById("list-type").innerHTML = listType;
 
                 taskList = document.getElementById("task-list");
                 taskTemplate = document.getElementById("task-template").cloneNode(true);
@@ -40,16 +38,15 @@
                 if (localStorage.getItem(listType+"-tdl-name")) {
                     // retrieves data from local storage
                     var names = JSON.parse(localStorage.getItem(listType+"-tdl-name"));
-                    var descriptions = JSON.parse(localStorage.getItem(listType+"-tdl-description"));
 
                     for (var i = 0; i < names.length; i++) {
                         var newTask = taskTemplate.cloneNode(true);
                         getInput(newTask, "task-name").value = names[i];
-                        newTask.getElementsByClassName("task-description")[0].innerHTML = descriptions[i];
                         addTask(newTask);
                     }     
                 }
                 if (!taskList.firstChild) addTask(taskTemplate);
+
             };
 
             function saveList() {
@@ -75,19 +72,8 @@
                 <li class="nav-item">
                     <a class="nav-link" href="template/templateViewer.html">Templates</a>
                 </li>
-                <li class="nav-item dropdown active">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    To-Do List
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" onclick="loadToDoList('Day')" href="toDoList.html">Day</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Week')" href="toDoList.html">Week</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Month')" href="toDoList.html">Month</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="loadToDoList('Year')" href="toDoList.html">Year</a>
-                    </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="toDoList.html">To-Do List</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="planner.html">Planner</a>
@@ -96,21 +82,16 @@
         </nav>
 
         <!-- Task Template-->
-        <li class="list-group-item" style="display: none" id="task-template">
+        <li class="list-group-item" style="display: none;" id="task-template">
             <input type="checkbox" style="position: absolute; top: 50%; left: 2.5%; transform: translate(-50%, -50%);" onclick="toggleStatus(this)">
             <div class="col text-left" style="margin-left: 30px;">
-                <div class="row" style="margin-bottom: -15px;">
+                <div class="row">
                     <div class="col">
                         <input type="text" class="form-control-plaintext text-left task-name" placeholder="Name" style="font-size: 40px;">
                     </div>
-                    <button type="button" class="close" aria-label="Close" style="position: absolute; top: 15%; right: 2%; transform: translate(-50%, -50%);" onclick="remove(this.parentNode.parentNode.parentNode)">
-                        <span aria-hidden="true" style="color: gray;">&times;</span>
+                    <button type="button" class="close" aria-label="Close" style="position: absolute; top: 45%; right: 2%; transform: translate(-50%, -50%);" onclick="remove(this.parentNode.parentNode.parentNode)">
+                        <span aria-hidden="true" style="color: red;">&times;</span>
                     </button>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <textarea class="form-control-plaintext text-left task-description" placeholder="Description" style="font-size: 20px;"></textarea>
-                    </div>
                 </div>
             </div>
         </li>
@@ -131,14 +112,22 @@
 
         <!-- Task List -->
         <div class="after-header text-light">
-            <div class="container-fluid" id="list-type" style="text-align: center; margin-top: 20px; font-size: 100px;"></div>
-            <ul class="list-group list-group-flush" style="margin-top:20px;" id="task-list"></ul>
+            <ul class="list-group list-group-flush" id="task-list"></ul>
         </div>
 
         <div class="container-fluid text-center" style="margin-top: 10px">
             <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addTask(taskTemplate)">Add</button>
         </div>
         <script type="text/javascript">
+            $( function() {
+                $( "#task-list" ).sortable({
+                    stop: function(event, ui) {
+                        saveList();
+                    }
+                });
+                $( "#task-list" ).disableSelection();
+            } );
+
             function addTask(task) {
                 var newTask = task.cloneNode(true);
                 activateCallbackFunctions(newTask);
@@ -152,10 +141,6 @@
                     if (event.key === "Enter") $(nameInput).trigger("blur");
                 });
                 nameInput.onblur = function() { saveList(); };
-
-                var textarea = task.getElementsByClassName("task-description")[0];
-                textarea.addEventListener("keyup", function(event) { saveList(); });
-                textarea.onblur = function() { saveList(); };
             }
         </script>
 
