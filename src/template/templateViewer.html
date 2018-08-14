@@ -24,6 +24,7 @@
 
         <!-- Javascript Libraries/Plug-ins -->
         <script src="../js/jquery.js"></script>
+        <script src="../js/jquery-ui.js"></script>
         <script src="../js/bootstrap.js"></script>
         <script src="../js/clockpicker.js"></script>
         <script src="../js/script.js"></script>
@@ -195,6 +196,16 @@
         <div class="after-header">
             <ul class="list-group list-group-flush" id="template-list" style="font-size: 20px;"></ul>
         </div>
+        <script type="text/javascript">
+            $( function() {
+                $( "#template-list" ).sortable({
+                    stop: function(event, ui) {
+                        saveList();
+                    }
+                });
+                $( "#template-list" ).disableSelection();
+            } );
+        </script>
 
     </body>
 
