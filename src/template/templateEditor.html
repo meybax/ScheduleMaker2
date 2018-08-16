@@ -54,12 +54,14 @@
                     // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-"+templateName.id));
                     var names = JSON.parse(localStorage.getItem("store-name-"+templateName.id));
+                    var durations = JSON.parse(localStorage.getItem("store-duration-"+templateName.id));
 
                     for (var i = 0; i < starts.length; i++) {
                         // uses data to recreate activity list
                         var newActivity = templateActivity.cloneNode(true);
                         getInput(newActivity, "activity-start").value = starts[i];
                         getInput(newActivity, "activity-name").value = names[i];
+                        getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
                 } 
@@ -77,9 +79,11 @@
             // function to save the schedule to the template
             function saveList() {
                 var starts = inputValueArray(activityList, "activity-start");
-                var names = inputValueArray(activityList, "activity-name");                  
+                var names = inputValueArray(activityList, "activity-name");  
+                var durations = inputValueArray(activityList, "activity-duration");                
                 localStorage.setItem("store-start-"+templateName.id, JSON.stringify(starts));
                 localStorage.setItem("store-name-"+templateName.id, JSON.stringify(names));
+                localStorage.setItem("store-duration-"+templateName.id, JSON.stringify(durations));
             }
             
             // function to iterate through activities to change the duration
@@ -179,6 +183,7 @@
             function loadTemplate() {
                 localStorage.setItem("store-start-sched", localStorage.getItem("store-start-"+templateName.id));
                 localStorage.setItem("store-name-sched", localStorage.getItem("store-name-"+templateName.id));
+                localStorage.setItem("store-duration-sched", localStorage.getItem("store-duration-"+templateName.id));
                 window.open("../main.html", "_self");
             }
         </script>

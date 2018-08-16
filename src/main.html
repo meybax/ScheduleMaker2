@@ -16,15 +16,15 @@
         <!-- General CSS Style -->
         <style>
             .current { background-color:  rgb(25, 25, 200); }
-            .past { opacity: 0.5; }
+            .past { opacity: 0.75; }
             .popover { margin-left: 115px; }
             input.changed {
                 animation-name: flash;
-                animation-duration: 1s;
+                animation-duration: 0.75s;
             }
             @keyframes flash {
                 0%   {background-color: black;}
-                50%  {background-color: orange;}
+                50%  {background-color: rgba(255, 167, 4, 0.5);}
                 100% {background-color: black;}
             }
         </style>
@@ -69,23 +69,26 @@
                 // function to update the status of each activity
                 (function updateStatus() {
                     if (!isEditing) {
-                        var activities = getValidActivities();
+                        var activities = getActivities();
                         var date = new Date();
                         var currTime = getClockTime(date.getHours(), date.getMinutes());
+                        var isFound = false;
                         
-                        if (activities.length > 0) {
-                            // iterates through list to identify the current activity,
-                            // dim past activities,
-                            // and clear the remaining activiites
-                            if (currTime >= getInput(last(activities), "activity-start").value) updateCurrent(last(activities));
-                            else clearStatus(last(activities));
-                            for (var i = 0; i < activities.length - 1; i++) {
-                                var time = getInput(activities[i], "activity-start").value;
-                                var timeNext = getInput(activities[i+1], "activity-start").value;
-                                if (currTime >= time) {
-                                    if (currTime < timeNext) updateCurrent(activities[i]);
-                                    else updatePast(activities[i]);
-                                } else clearStatus(activities[i]);
+                        for (var i = 0; i < activities.length; i++) {
+                            if (isFound) {
+                                clearStatus(activities[i]);
+                            } else {
+                                var tempTime = getInput(activities[i], "activity-start").value;
+                                var end = timeSum(tempTime, getInput(activities[i], "activity-duration").value, false);
+                                if (currTime < tempTime) {
+                                    clearStatus(activities[i]);
+                                    isFound = true;
+                                } else if (currTime < end) {
+                                    updateCurrent(activities[i]);
+                                    isFound = true;
+                                } else {
+                                    updatePast(activities[i]);
+                                }
                             }
                         }
                     }
@@ -118,11 +121,16 @@
             
             // function to iterate through activities to change the duration
             function updateDuration() {
-                var activities = getValidActivities();
+                var activities = getActivities();
                 for (var i = 0; i < activities.length-1; i++) {
+                    var dur = getInput(activities[i], "activity-duration");
                     var time = getInput(activities[i], "activity-start").value;
                     var timeNext = getInput(activities[i+1], "activity-start").value;
-                    getInput(activities[i], "activity-duration").value = timeDifference(time, timeNext);
+                    if (dur.value !== timeDifference(time, timeNext)) {
+                        dur.classList.add("changed");
+                        setTimeout(endAnimation.bind(null, dur), 750);
+                        dur.value = timeDifference(time, timeNext);
+                    }
                 }
             }
             // updateDuration helper function to calculate time difference
@@ -140,15 +148,19 @@
             }
 
             function updateStartTime() {
-                var activities = getValidActivities();
+                var activities = getActivities();
                 for (var i = 1; i < activities.length; i++) {
+                    var start = getInput(activities[i], "activity-start");
                     var timePrev = getInput(activities[i-1], "activity-start").value;
-                    initAt30(activities[i-1]);
                     var duration = getInput(activities[i-1], "activity-duration").value;
-                    getInput(activities[i], "activity-start").value = timeSum(timePrev, duration);
+                    if (start.value !== timeSum(timePrev, duration, true)) {
+                        start.classList.add("changed");
+                        setTimeout(endAnimation.bind(null, start), 750);
+                        start.value = timeSum(timePrev, duration, true);
+                    }
                 }
             }
-            function timeSum(time, duration) {
+            function timeSum(time, duration, subtract24) {
                 duration = durationStrToNum(duration);
                 var hrSum = parseInt(time.substring(0, 2)) + parseInt(duration.substring(0, 2));
                 var minSum = parseInt(time.substring(3, 5)) + parseInt(duration.substring(3, 5));
@@ -156,9 +168,13 @@
                     minSum -= 60;
                     hrSum++;
                 }
-                if (hrSum >= 24) hrSum -= 24;
+                if (hrSum >= 24 && subtract24) hrSum -= 24;
                 if (hrSum < 10) hrSum = "0" + hrSum;
                 return getClockTime(hrSum, minSum);
+            }
+
+            function endAnimation(input) {
+                input.classList.remove("changed");
             }
 
             // function to convert raw numbers into clock time string
@@ -234,13 +250,8 @@
             }
             
             // function to return array of activities which have a valid start time
-            function getValidActivities() {
-                var activities = activityList.getElementsByClassName("list-group-item");
-                var validActivities = [];
-                for (var i = 0; i < activities.length; i++) {
-                    if (isValidTimeInput(getInput(activities[i], "activity-start"))) validActivities.push(activities[i]);
-                }
-                return validActivities;
+            function getActivities() {
+                return activityList.getElementsByClassName("list-group-item");
             }
             
             // function to check if an input value is a valid time
@@ -260,22 +271,14 @@
 
             function newActivity() {
                 var activity = templateActivity.cloneNode(true);
-                var activities = getValidActivities();
+                var activities = getActivities();
                 if (activities.length > 0) {
-                    initAt30(last(activities));
-                    var newTime = timeSum(getInput(last(activities), "activity-start").value, getInput(last(activities), "activity-duration").value);
+                    var newTime = timeSum(getInput(last(activities), "activity-start").value, getInput(last(activities), "activity-duration").value, true);
                     getInput(activity, "activity-start").value = newTime;
                 }
+                getInput(activity, "activity-duration").value = "30 min";
                 addActivity(activity);
             }
-
-            function initAt30(activity) {
-                if (getInput(activity, "activity-duration").value === "") getInput(activity, "activity-duration").value = "30 min";
-            }
-
-            $('sortable').mousedown(function(){
-                document.activeElement.blur();
-            });
             
         </script>
 
@@ -374,7 +377,7 @@
                 var temp = activity.cloneNode(true);
                 $(activity).remove();
                 // iterates through valid activities to identify correct slot for updated activity
-                var activities = getValidActivities();
+                var activities = getActivities();
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
                 if (activities.length > 0) {
@@ -436,10 +439,12 @@
                 });
                 durationInput.onfocus = function() {
                     $( "#activity-list" ).sortable( "disable" );
+                    isEditing = true;
                 }
                 durationInput.onblur = function() {
                     $( "#activity-list" ).sortable( "enable" );
                     if (ppDur) ppDur.hide(); // hides clockpicker popover when duration time input blurs
+                    isEditing = false;
                     durationInput.value = durationInput.value.trim();
                     if (checkDurationInput(activity)) {
                         // updateStartTime
