@@ -59,12 +59,11 @@
                         var newActivity = templateActivity.cloneNode(true);
                         getInput(newActivity, "activity-start").value = starts[i];
                         getInput(newActivity, "activity-name").value = names[i];
-                        if (durations[i] === "undefined") durations[i] = "";
                         getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
                 } 
-                if (!activityList.firstChild) newActivity();
+                if (!activityList.firstChild) addDefaultActivity();
                 
                 // function to update the status of each activity
                 (function updateStatus() {
@@ -269,12 +268,14 @@
                 return true;
             }
 
-            function newActivity() {
+            function addDefaultActivity() {
                 var activity = templateActivity.cloneNode(true);
                 var activities = getActivities();
                 if (activities.length > 0) {
                     var newTime = timeSum(getInput(last(activities), "activity-start").value, getInput(last(activities), "activity-duration").value, true);
                     getInput(activity, "activity-start").value = newTime;
+                } else {
+                    getInput(activity, "activity-start").value = "07:00";
                 }
                 getInput(activity, "activity-duration").value = "30 min";
                 addActivity(activity);
@@ -330,7 +331,7 @@
             // function to delete activity when closed
             function remove(activity) {
                 $(activity).remove();
-                if (activityList.getElementsByTagName("LI")[0] == null) newActivity();
+                if (activityList.getElementsByTagName("LI")[0] == null) addDefaultActivity();
                 updateDuration();
                 saveList();
             }
@@ -359,7 +360,7 @@
 
         <!-- Add Activity Button -->
         <div class="container-fluid text-center" style="margin-top: 10px">
-            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="newActivity()">Add</button>
+            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addDefaultActivity()">Add</button>
         </div>
         <script type="text/javascript">
             // function to append blank activity to activity list
