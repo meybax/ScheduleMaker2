@@ -17,6 +17,16 @@
         <style>
             .current { background-color:  rgb(25, 25, 200); }
             .past { opacity: 0.5; }
+            .popover { margin-left: 115px; }
+            input.changed {
+                animation-name: flash;
+                animation-duration: 1s;
+            }
+            @keyframes flash {
+                0%   {background-color: black;}
+                50%  {background-color: orange;}
+                100% {background-color: black;}
+            }
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
@@ -42,16 +52,19 @@
                     // retrieves data from local storage
                     var starts = JSON.parse(localStorage.getItem("store-start-sched"));
                     var names = JSON.parse(localStorage.getItem("store-name-sched"));
+                    var durations = JSON.parse(localStorage.getItem("store-duration-sched"));
 
                     for (var i = 0; i < starts.length; i++) {
                         // uses data to recreate activity list
                         var newActivity = templateActivity.cloneNode(true);
                         getInput(newActivity, "activity-start").value = starts[i];
                         getInput(newActivity, "activity-name").value = names[i];
+                        if (durations[i] === "undefined") durations[i] = "";
+                        getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
                     }           
                 } 
-                if (!activityList.firstChild) addActivity(templateActivity);
+                if (!activityList.firstChild) newActivity();
                 
                 // function to update the status of each activity
                 (function updateStatus() {
@@ -79,12 +92,6 @@
                     setTimeout(updateStatus, 100);
                 })();
             };
-            // function to convert raw numbers into clock time string
-            function getClockTime(hr, min) {
-                if (hr.toString().length == 1) hr = "0" + hr;
-                if (min.toString().length == 1) min = "0" + min;
-                return hr + ":" + min;
-            }
             // updateStatus helper functions to change classes
             function updateCurrent(activity) {
                 activity.classList.remove("past");
@@ -102,9 +109,11 @@
             // function to store schedule in local storage
             function saveList() {
                 var starts = inputValueArray(activityList, "activity-start");
-                var names = inputValueArray(activityList, "activity-name");                  
+                var names = inputValueArray(activityList, "activity-name");
+                var durations = inputValueArray(activityList, "activity-duration");                
                 localStorage.setItem("store-start-sched", JSON.stringify(starts));
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
+                localStorage.setItem("store-duration-sched", JSON.stringify(durations));
             }
             
             // function to iterate through activities to change the duration
@@ -115,21 +124,113 @@
                     var timeNext = getInput(activities[i+1], "activity-start").value;
                     getInput(activities[i], "activity-duration").value = timeDifference(time, timeNext);
                 }
-                if (activities.length > 0) getInput(last(activities), "activity-duration").value = "";
             }
             // updateDuration helper function to calculate time difference
             function timeDifference(curr, next) {
-                var time;
                 var hrDiff = next.substring(0, 2) - curr.substring(0, 2);
                 var minDiff = next.substring(3, 5) - curr.substring(3, 5);
                 if (minDiff < 0) {
                     minDiff += 60;
                     hrDiff--;
                 }
-                if (hrDiff == 0) time = minDiff + " min";
-                else if (minDiff == 0) time = hrDiff + " hr";
-                else time = hrDiff + " hr " + minDiff + " min";
+                if (hrDiff < 0) {
+                    hrDiff += 24;
+                }
+                return durationNumToStr(hrDiff, minDiff);
+            }
+
+            function updateStartTime() {
+                var activities = getValidActivities();
+                for (var i = 1; i < activities.length; i++) {
+                    var timePrev = getInput(activities[i-1], "activity-start").value;
+                    initAt30(activities[i-1]);
+                    var duration = getInput(activities[i-1], "activity-duration").value;
+                    getInput(activities[i], "activity-start").value = timeSum(timePrev, duration);
+                }
+            }
+            function timeSum(time, duration) {
+                duration = durationStrToNum(duration);
+                var hrSum = parseInt(time.substring(0, 2)) + parseInt(duration.substring(0, 2));
+                var minSum = parseInt(time.substring(3, 5)) + parseInt(duration.substring(3, 5));
+                if (minSum >= 60) {
+                    minSum -= 60;
+                    hrSum++;
+                }
+                if (hrSum >= 24) hrSum -= 24;
+                if (hrSum < 10) hrSum = "0" + hrSum;
+                return getClockTime(hrSum, minSum);
+            }
+
+            // function to convert raw numbers into clock time string
+            function getClockTime(hr, min) {
+                if (hr.toString().length == 1) hr = "0" + hr;
+                if (min.toString().length == 1) min = "0" + min;
+                return hr + ":" + min;
+            }
+            function durationNumToStr(hr, min) {
+                var time;
+                hr = parseInt(hr);
+                min = parseInt(min);
+                if (hr == 0) time = min + " min";
+                else if (min == 0) time = hr + " hr";
+                else time = hr + " hr " + min + " min";
                 return time;
+            }
+            function durationStrToNum(str) {
+                var hr = "00";
+                var min = "00";
+                if (str.length == 4) {
+                    if (str.substring(2, 4) === "hr") {
+                        // single hr
+                        hr = parseInt(str.substring(0, 1));
+                        if (isNaN(hr)) return false;
+                    } else return false;
+                } else if (str.length == 5) {
+                    if (str.substring(3, 5) === "hr") {
+                        // double hr ---
+                        hr = parseInt(str.substring(0, 2));
+                        if (isNaN(hr)) return false;
+                    } else if (str.substring(2, 5) === "min") {
+                        // single min ---
+                        min = parseInt(str.substring(0, 1));
+                        if (isNaN(min)) return false;
+                    } else return false;
+                } else if (str.length == 6) {
+                    if (str.substring(3, 6) === "min") {
+                        // double min ---
+                        min = parseInt(str.substring(0, 2));
+                        if (isNaN(min)) return false;
+                    } else return false;
+                } else if (str.length == 10) {
+                    if (str.substring(2, 4) === "hr" && str.substring(7, 10) === "min") {
+                        // single hr single min ---
+                        hr = parseInt(str.substring(0, 1));
+                        min = parseInt(str.substring(5, 6));
+                        if (isNaN(hr) || isNaN(min)) return false;
+                    } else return false;
+                } else if (str.length == 11) {
+                    if (str.substring(8, 11) === "min") {
+                        if (str.substring(2, 4) === "hr") {
+                            // single hr double min ---
+                            hr = parseInt(str.substring(0, 1));
+                            min = parseInt(str.substring(5, 7));
+                            if (isNaN(hr) || isNaN(min)) return false;
+                        } else if (str.substring(3, 5) === "hr") {
+                            // double hr single min ---
+                            hr = parseInt(str.substring(0, 2));
+                            min = parseInt(str.substring(6, 7));
+                            if (isNaN(hr) || isNaN(min)) return false;
+                        }
+                    } else return false;
+                } else if (str.length == 12) {
+                    if (str.substring(3, 5) === "hr" && str.substring(9, 12) === "min") {
+                        // double hr double min ---
+                        hr = parseInt(str.substring(0, 2));
+                        min = parseInt(str.substring(6, 8));
+                        if (isNaN(hr) || isNaN(min)) return false;
+                    } else return false;
+                } else return false;
+                return getClockTime(hr, min);
             }
             
             // function to return array of activities which have a valid start time
@@ -137,22 +238,44 @@
                 var activities = activityList.getElementsByClassName("list-group-item");
                 var validActivities = [];
                 for (var i = 0; i < activities.length; i++) {
-                    var start = getInput(activities[i], "activity-start").value;
-                    if (isValidInput(start)) validActivities.push(activities[i]);
+                    if (isValidTimeInput(getInput(activities[i], "activity-start"))) validActivities.push(activities[i]);
                 }
                 return validActivities;
             }
             
             // function to check if an input value is a valid time
-            function isValidInput(value) {
-                if (value.length != 5) { return false; }
-                if (value[2] != ':') { return false; }
-                hrInput = value.substring(0, 2);
-                minInput = value.substring(3, 5);
-                if (isNaN(hrInput) || isNaN(minInput)) { return false; }
-                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) { return false; }
+            function isValidTimeInput(input) {
+                if (!input.value) return false;
+                if (input.value.length != 5) { 
+                    if (input.value.length == 4) input.value = "0" + input.value;
+                    else return false; 
+                }
+                if (input.value[2] != ':') return false;
+                hrInput = input.value.substring(0, 2);
+                minInput = input.value.substring(3, 5);
+                if (isNaN(hrInput) || isNaN(minInput)) return false;
+                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) return false;
                 return true;
             }
+
+            function newActivity() {
+                var activity = templateActivity.cloneNode(true);
+                var activities = getValidActivities();
+                if (activities.length > 0) {
+                    initAt30(last(activities));
+                    var newTime = timeSum(getInput(last(activities), "activity-start").value, getInput(last(activities), "activity-duration").value);
+                    getInput(activity, "activity-start").value = newTime;
+                }
+                addActivity(activity);
+            }
+
+            function initAt30(activity) {
+                if (getInput(activity, "activity-duration").value === "") getInput(activity, "activity-duration").value = "30 min";
+            }
+
+            $('sortable').mousedown(function(){
+                document.activeElement.blur();
+            });
             
         </script>
 
@@ -191,7 +314,9 @@
                     <input type="text" class="form-control-plaintext activity-name" placeholder="Name" style="margin-left: 15px">
                 </div>
                 <div class="col-sm text-center">
-                    <input type="text" readonly class="form-control-plaintext activity-duration" style="margin-left: 15px">
+                    <div class="input-group clockpicker" data-autoclose="true">
+                        <input type="text" class="form-control-plaintext activity-duration" placeholder = "Duration" style="margin-left: 15px">
+                    </div>
                 </div>
                 <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="remove(this.parentNode.parentNode)">
                     <span aria-hidden="true" style="color: red;">&times;</span>
@@ -202,7 +327,7 @@
             // function to delete activity when closed
             function remove(activity) {
                 $(activity).remove();
-                if (activityList.getElementsByTagName("LI")[0] == null) addActivity(templateActivity);
+                if (activityList.getElementsByTagName("LI")[0] == null) newActivity();
                 updateDuration();
                 saveList();
             }
@@ -212,10 +337,26 @@
         <div class="after-header">
             <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px;"></ul>
         </div>
+        <script type="text/javascript">
+            $( function() {
+                $( "#activity-list" ).sortable({
+                    scroll: true,
+                    start: function(event, ui) {
+                        isEditing = true;
+                    },
+                    stop: function(event, ui) {
+                        updateStartTime();
+                        saveList();
+                        isEditing = false;
+                    }
+                });
+                $( "#activity-list" ).disableSelection();
+            } );
+        </script>
 
         <!-- Add Activity Button -->
         <div class="container-fluid text-center" style="margin-top: 10px">
-            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addActivity(templateActivity)">Add</button>
+            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="newActivity()">Add</button>
         </div>
         <script type="text/javascript">
             // function to append blank activity to activity list
@@ -224,7 +365,6 @@
                 activateCallBackFunctions(newActivity);
 
                 activityList.appendChild(newActivity);
-                updateDuration();
                 saveList();
             }
             
@@ -252,10 +392,17 @@
             // function to establish call back functions for each new activity
             function activateCallBackFunctions(activity) {
                 // activates clockpicker plug-in
-                var clockpicker = activity.getElementsByClassName("clockpicker")[0];
-                var popover;
-                $(clockpicker).clockpicker({
-                    afterShow: function(self) { popover = self; }
+                var cpStart = activity.getElementsByClassName("clockpicker")[0];
+                var cpDur = activity.getElementsByClassName("clockpicker")[1];
+                var ppStart;
+                var ppDur;
+                $(cpStart).clockpicker({
+                    afterShow: function(self) { ppStart = self; },
+                    afterHide: function() { document.activeElement.blur() }
+                });
+                $(cpDur).clockpicker({
+                    afterShow: function(self) { ppDur = self; },
+                    afterHide: function() { document.activeElement.blur() }
                 });
                 
                 // watches name input field for activity to save changes
@@ -270,35 +417,83 @@
                 startInput.addEventListener("keyup", function(event) { 
                     if (event.key === "Enter") { $(startInput).trigger("blur"); }
                 });
-                startInput.onfocus = function() { isEditing = true; };
+                startInput.onfocus = function() { 
+                    $( "#activity-list" ).sortable( "disable" );
+                    isEditing = true; 
+                };
                 startInput.onblur = function() {
-                    popover.hide(); // hides clockpicker popover when start time input blurs
+                    $( "#activity-list" ).sortable( "enable" );
+                    if (ppStart) ppStart.hide(); // hides clockpicker popover when start time input blurs
                     isEditing = false;  // updates whether the user editing for updateStatus
+                    startInput.value = startInput.value.trim();
                     checkTimeInput(activity);   // verifies input value
+                };
+
+                // watches duration time input field for activity to update list
+                var durationInput = getInput(activity, "activity-duration");
+                durationInput.addEventListener("keyup", function(event) { 
+                    if (event.key === "Enter") { $(durationInput).trigger("blur"); }
+                });
+                durationInput.onfocus = function() {
+                    $( "#activity-list" ).sortable( "disable" );
+                }
+                durationInput.onblur = function() {
+                    $( "#activity-list" ).sortable( "enable" );
+                    if (ppDur) ppDur.hide(); // hides clockpicker popover when duration time input blurs
+                    durationInput.value = durationInput.value.trim();
+                    if (checkDurationInput(activity)) {
+                        // updateStartTime
+                        updateStartTime();
+                        saveList();
+                    }
                 };
             }
             // activateCallBackFunctions helper to verify start time input
             function checkTimeInput(activity) {
                 $(".alert").alert('close');
                 // if input field is valid, inserts the updated activity
-                if (isValidInput(getInput(activity, "activity-start").value)) insertActivity(activity);
+                if (isValidTimeInput(getInput(activity, "activity-start"))) insertActivity(activity);
                 // if input field is NOT valid, presents error
                 else {
                     // creates alert element
-                    var alert = document.createElement("DIV");
-                    alert.style = "text-align: center; margin-bottom: 0px";
-                    alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
-                    alert.setAttribute("role", "alert");
-                    alert.innerHTML = "<strong>Invalid input.</strong> Must be in format XX:XX (ex. 07:30)" +
+                    var msg = "<strong>Invalid input.</strong> Must be in format XX:XX (ex. 10:30)" +
                         "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
                             "<span aria-hidden=\"true\">&times;</span>" +
                         "</button>";
-                    $(activity).after(alert);
-                    
-                    // reverts invalid input back to previously valid input
-                    var index = getIndex(activity, activityList.getElementsByTagName("LI"));
-                    getInput(activity, "activity-start").value = JSON.parse(localStorage.getItem("store-start-sched"))[index];
+                    createAlert(activity, "start", msg);
                 }
+            }
+            function checkDurationInput(activity) {
+                $(".alert").alert('close');
+                var durationInput = getInput(activity, "activity-duration");
+                if (isValidTimeInput(durationInput)) {
+                    durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
+                    return true;
+                } else {
+                    durationInput.value = durationStrToNum(durationInput.value);
+                    if (isValidTimeInput(durationInput)) {
+                        durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
+                        return true;
+                    } else {
+                        var msg = "<strong>Invalid input.</strong> Must be in format XX hr, XX min, XX hr XX min, or XX:XX" +
+                            "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                                "<span aria-hidden=\"true\">&times;</span>" +
+                            "</button>";
+                        createAlert(activity, "duration", msg);
+                    }
+                }
+            }
+            function createAlert(activity, type, msg) {
+                var alert = document.createElement("DIV");
+                alert.style = "text-align: center; margin-bottom: 0px";
+                alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
+                alert.setAttribute("role", "alert");
+                alert.innerHTML = msg;
+                $(activity).after(alert);
+                
+                // reverts invalid input back to previously valid input
+                var index = getIndex(activity, activityList.getElementsByTagName("LI"));
+                getInput(activity, "activity-" + type).value = JSON.parse(localStorage.getItem("store-" + type + "-sched"))[index];
             }
         </script>
 
