@@ -3,9 +3,13 @@ input, textarea {
     color: white;
     font-size: 30px;
 }
-input, textarea:focus{ outline: none; }
+input, textarea:focus { 
+    outline: none; 
+}
 
-button:focus{ outline: none; }
+button:focus { 
+    outline: none; 
+}
 
 ::placeholder {
     color: springgreen;
@@ -18,5 +22,9 @@ button:focus{ outline: none; }
     background-color: black;
 }
 
-.activity-start { color: lime; }
-.activity-duration { color: cyan;}
+.activity-start { 
+    color: lime; 
+}
+.activity-duration { 
+    color: cyan;
+}

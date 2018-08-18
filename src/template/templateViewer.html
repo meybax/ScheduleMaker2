@@ -50,7 +50,9 @@
                         createTemplate(newTemplate);
                     } 
                 } 
-                if (!templateList.firstChild) createTemplate(templateTemplate);
+                if (!templateList.firstChild) {
+                    createTemplate(templateTemplate);
+                }
             };
             
             // function to save template list to local storage
@@ -61,7 +63,9 @@
             function getIdArray(list) {
                 var a = [];
                 list = list.getElementsByTagName("LI");
-                for (var i = 0; i < list.length; i++) a.push(list[i].id.substring(11));
+                for (var i = 0; i < list.length; i++) {
+                    a.push(list[i].id.substring(11));
+                }
                 return a;
             }
 
@@ -103,7 +107,9 @@
             function activateCallBackFunctions(template) {
                 var nameInput = getInput(template, "template-name");
                 nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
                 });
                 nameInput.onblur = function() { 
                     changeTemplateName(nameInput, template); 
@@ -176,18 +182,20 @@
             function confirm(id) {
                 var modal = document.getElementsByClassName("modal")[0];
                 modal.id = "modal-"+id;
-                $(modal).modal('show');
+                $(modal).modal("show");
             }
             // function to remove template from template list
             function remove() {
                 var modal = document.getElementsByClassName("modal")[0];
-                $(modal).modal('hide');
+                $(modal).modal("hide");
                 var id = modal.id.substring(6);
                 var template = document.getElementById(id);
                 var index = getIndex(template, templateList.getElementsByTagName("LI"));
                 $(template).remove();
                 removeTemplateData(template.id);
-                if (templateList.getElementsByTagName("LI")[0] == null) createTemplate(templateTemplate);
+                if (templateList.getElementsByTagName("LI")[0] == null) {
+                    createTemplate(templateTemplate);
+                }
                 saveList();
             }
         </script>

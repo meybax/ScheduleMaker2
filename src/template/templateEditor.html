@@ -26,9 +26,15 @@
                 animation-duration: 0.75s;
             }
             @keyframes flash {
-                0%   {background-color: black;}
-                50%  {background-color: rgba(255, 167, 4, 0.5);}
-                100% {background-color: black;}
+                0%   {
+                    background-color: black;
+                }
+                50%  {
+                    background-color: rgba(255, 167, 4, 0.5);
+                }
+                100% {
+                    background-color: black;
+                }
             }
         </style>
 
@@ -58,25 +64,27 @@
                 nameInput.value = name;
                 // call back functions for the name input
                 nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
                 });
                 nameInput.onblur = function() { 
                     var prev = changeTemplateName(nameInput, templateName); 
                     updateTemplateNames(prev, templateName.id);
                 };
 
-                if (localStorage.getItem("store-locked-"+templateName.id)) {
-                    var lockedItems = JSON.parse(localStorage.getItem("store-locked-"+templateName.id));
+                if (localStorage.getItem("store-locked-" + templateName.id)) {
+                    var lockedItems = JSON.parse(localStorage.getItem("store-locked-" + templateName.id));
                 } else {
                     var lockedItems = [];
                 }
                 
                 // function to load template if exists
-                if (localStorage.getItem("store-start-"+templateName.id)) {
+                if (localStorage.getItem("store-start-" + templateName.id)) {
                     // retrieves data from local storage
-                    var starts = JSON.parse(localStorage.getItem("store-start-"+templateName.id));
-                    var names = JSON.parse(localStorage.getItem("store-name-"+templateName.id));
-                    var durations = JSON.parse(localStorage.getItem("store-duration-"+templateName.id));
+                    var starts = JSON.parse(localStorage.getItem("store-start-" + templateName.id));
+                    var names = JSON.parse(localStorage.getItem("store-name-" + templateName.id));
+                    var durations = JSON.parse(localStorage.getItem("store-duration-" + templateName.id));
 
                     for (var i = 0; i < starts.length; i++) {
                         // uses data to recreate activity list
@@ -89,7 +97,7 @@
                     
                     var activities = getActivities();
                     for (var i = 0; i < lockedItems.length; i++) {
-                        toggleLocked(activities[lockedItems[i]].getElementsByTagName('img')[0]);
+                        toggleLocked(activities[lockedItems[i]].getElementsByTagName("img")[0]);
                     }
                 } 
                 if (!activityList.firstChild) {
@@ -111,21 +119,22 @@
                 var names = inputValueArray(activityList, "activity-name");  
                 var durations = inputValueArray(activityList, "activity-duration");
                 var lockedItems = getLocked();                   
-                localStorage.setItem("store-start-"+templateName.id, JSON.stringify(starts));
-                localStorage.setItem("store-name-"+templateName.id, JSON.stringify(names));
-                localStorage.setItem("store-duration-"+templateName.id, JSON.stringify(durations));
-                localStorage.setItem("store-locked-"+templateName.id, JSON.stringify(lockedItems));
+                localStorage.setItem("store-start-" + templateName.id, JSON.stringify(starts));
+                localStorage.setItem("store-name-" + templateName.id, JSON.stringify(names));
+                localStorage.setItem("store-duration-" + templateName.id, JSON.stringify(durations));
+                localStorage.setItem("store-locked-" + templateName.id, JSON.stringify(lockedItems));
             }
+            // function to retrieve list of locked activities indices
             function getLocked() {
-                var lockedIndex = [];
+                var lockedIndices = [];
                 var activities = getActivities();
                 for (var i = 0; i < activities.length; i++) {
                     var activity = activities[i];
                     if ($(activity).hasClass("locked")) {
-                        lockedIndex.push(i);
+                        lockedIndices.push(i);
                     }
                 }
-                return lockedIndex;
+                return lockedIndices;
             }
             
             // function to iterate through activities to change the duration
@@ -135,6 +144,7 @@
                     var dur = getInput(activities[i], "activity-duration");
                     var time = getInput(activities[i], "activity-start").value;
                     var timeNext = getInput(activities[i+1], "activity-start").value;
+                    // animates and updates changed duration
                     if (dur.value !== timeDifference(time, timeNext)) {
                         dur.classList.add("changed");
                         setTimeout(endAnimation.bind(null, dur), 750);
@@ -162,13 +172,14 @@
                     var start = getInput(activities[i], "activity-start");
                     var timePrev = getInput(activities[i-1], "activity-start").value;
                     var duration = getInput(activities[i-1], "activity-duration").value;
+                    // if activity is not locked then update start time normall
                     if (!$(activities[i]).hasClass("locked")) {
                         if (start.value !== timeSum(timePrev, duration, true)) {
                             start.classList.add("changed");
                             setTimeout(endAnimation.bind(null, start), 750);
                             start.value = timeSum(timePrev, duration, true);
                         }
-                    } else { 
+                    } else {    // if activity is locked, insert activity in deserved place
                         if (i != getIndex(insertActivity(activities[i]), activities)) {
                             i = 0;
                         }
@@ -176,6 +187,7 @@
                 }
                 updateDuration();
             }
+            // function to sum time and duration to find time
             function timeSum(time, duration, subtract24) {
                 duration = durationStrToNum(duration);
                 var hrSum = parseInt(time.substring(0, 2)) + parseInt(duration.substring(0, 2));
@@ -184,84 +196,128 @@
                     minSum -= 60;
                     hrSum++;
                 }
-                if (hrSum >= 24 && subtract24) hrSum -= 24;
-                if (hrSum < 10) hrSum = "0" + hrSum;
+                if (hrSum >= 24 && subtract24) {
+                    hrSum -= 24;
+                }
                 return getClockTime(hrSum, minSum);
             }
-
+            
+            // function to reset animation
             function endAnimation(input) {
                 input.classList.remove("changed");
             }
 
             // function to convert raw numbers into clock time string
             function getClockTime(hr, min) {
-                if (hr.toString().length == 1) hr = "0" + hr;
-                if (min.toString().length == 1) min = "0" + min;
+                if (hr.toString().length == 1) {
+                    hr = "0" + hr;
+                }
+                if (min.toString().length == 1) {
+                    min = "0" + min;
+                }
                 return hr + ":" + min;
             }
+            // function to convert duration time input to string
             function durationNumToStr(hr, min) {
                 var time;
                 hr = parseInt(hr);
                 min = parseInt(min);
-                if (hr == 0) time = min + " min";
-                else if (min == 0) time = hr + " hr";
-                else time = hr + " hr " + min + " min";
+                if (hr == 0) {
+                    time = min + " min";
+                }
+                else if (min == 0) {
+                    time = hr + " hr";
+                }
+                else {
+                    time = hr + " hr " + min + " min";
+                }
                 return time;
             }
+            // function to convert string to time input
             function durationStrToNum(str) {
                 var hr = "00";
                 var min = "00";
                 if (str.length == 4) {
                     if (str.substring(2, 4) === "hr") {
-                        // single hr
+                        // single hr ---
                         hr = parseInt(str.substring(0, 1));
-                        if (isNaN(hr)) return false;
-                    } else return false;
+                        if (isNaN(hr)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 } else if (str.length == 5) {
                     if (str.substring(3, 5) === "hr") {
                         // double hr ---
                         hr = parseInt(str.substring(0, 2));
-                        if (isNaN(hr)) return false;
+                        if (isNaN(hr)) {
+                            return false;
+                        }
                     } else if (str.substring(2, 5) === "min") {
                         // single min ---
                         min = parseInt(str.substring(0, 1));
-                        if (isNaN(min)) return false;
-                    } else return false;
+                        if (isNaN(min)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 } else if (str.length == 6) {
                     if (str.substring(3, 6) === "min") {
                         // double min ---
                         min = parseInt(str.substring(0, 2));
-                        if (isNaN(min)) return false;
-                    } else return false;
+                        if (isNaN(min)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 } else if (str.length == 10) {
                     if (str.substring(2, 4) === "hr" && str.substring(7, 10) === "min") {
                         // single hr single min ---
                         hr = parseInt(str.substring(0, 1));
                         min = parseInt(str.substring(5, 6));
-                        if (isNaN(hr) || isNaN(min)) return false;
-                    } else return false;
+                        if (isNaN(hr) || isNaN(min)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 } else if (str.length == 11) {
                     if (str.substring(8, 11) === "min") {
                         if (str.substring(2, 4) === "hr") {
                             // single hr double min ---
                             hr = parseInt(str.substring(0, 1));
                             min = parseInt(str.substring(5, 7));
-                            if (isNaN(hr) || isNaN(min)) return false;
+                            if (isNaN(hr) || isNaN(min)) {
+                                return false;
+                            }
                         } else if (str.substring(3, 5) === "hr") {
                             // double hr single min ---
                             hr = parseInt(str.substring(0, 2));
                             min = parseInt(str.substring(6, 7));
-                            if (isNaN(hr) || isNaN(min)) return false;
+                            if (isNaN(hr) || isNaN(min)) {
+                                return false;
+                            }
                         }
-                    } else return false;
+                    } else {
+                        return false;
+                    }
                 } else if (str.length == 12) {
                     if (str.substring(3, 5) === "hr" && str.substring(9, 12) === "min") {
                         // double hr double min ---
                         hr = parseInt(str.substring(0, 2));
                         min = parseInt(str.substring(6, 8));
-                        if (isNaN(hr) || isNaN(min)) return false;
-                    } else return false;
-                } else return false;
+                        if (isNaN(hr) || isNaN(min)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
                 return getClockTime(hr, min);
             }
             
@@ -272,19 +328,32 @@
             
             // function to check if an input value is a valid time
             function isValidTimeInput(input) {
-                if (!input.value) return false;
-                if (input.value.length != 5) { 
-                    if (input.value.length == 4) input.value = "0" + input.value;
-                    else return false; 
+                if (!input.value) {
+                    return false;
                 }
-                if (input.value[2] != ':') return false;
+                if (input.value.length != 5) { 
+                    if (input.value.length == 4) {
+                        input.value = "0" + input.value;
+                    }
+                    else {
+                        return false; 
+                    }
+                }
+                if (input.value[2] != ":") {
+                    return false;
+                }
                 hrInput = input.value.substring(0, 2);
                 minInput = input.value.substring(3, 5);
-                if (isNaN(hrInput) || isNaN(minInput)) return false;
-                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) return false;
+                if (isNaN(hrInput) || isNaN(minInput)) {
+                    return false;
+                }
+                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) {
+                    return false;
+                }
                 return true;
             }
 
+            // function to add default activity to existing list
             function addDefaultActivity() {
                 var activity = templateActivity.cloneNode(true);
                 var activities = getActivities();
@@ -346,10 +415,10 @@
         <script type="text/javascript">
             // function to load template by overriding the schedule
             function loadTemplate() {
-                localStorage.setItem("store-start-sched", localStorage.getItem("store-start-"+templateName.id));
-                localStorage.setItem("store-name-sched", localStorage.getItem("store-name-"+templateName.id));
-                localStorage.setItem("store-duration-sched", localStorage.getItem("store-duration-"+templateName.id));
-                localStorage.setItem("store-locked-sched", localStorage.getItem("store-locked-"+templateName.id));
+                localStorage.setItem("store-start-sched", localStorage.getItem("store-start-" + templateName.id));
+                localStorage.setItem("store-name-sched", localStorage.getItem("store-name-" + templateName.id));
+                localStorage.setItem("store-duration-sched", localStorage.getItem("store-duration-" + templateName.id));
+                localStorage.setItem("store-locked-sched", localStorage.getItem("store-locked-" + templateName.id));
                 window.open("../main.html", "_self");
             }
         </script>
@@ -393,9 +462,11 @@
             <ul class="list-group list-group-flush" id="activity-list" style="font-size: 20px; margin-top: 20px;"></ul>
         </div>
         <script type="text/javascript">
+            // sortable activations
             $( function() {
                 $( "#activity-list" ).sortable({
                     scroll: true,
+                    cancel: ".locked, input",   // makes locked function unsortable
                     start: function(event, ui) {
                         isEditing = true;
                     },
@@ -408,22 +479,7 @@
                 $( "#activity-list" ).disableSelection();
             } );
 
-            $( function() {
-                $( "#activity-list" ).sortable({
-                    scroll: true,
-                    cancel: ".locked, input",
-                    start: function(event, ui) {
-                        isEditing = true;
-                    },
-                    stop: function(event, ui) {
-                        updateStartTime();
-                        saveList();
-                        isEditing = false;
-                    }
-                });
-                $( "#activity-list" ).disableSelection();
-            } );
-
+            // function to toggle if an activity is locked or not
             function toggleLocked(img) {
                 if (img.style.filter === "grayscale(100%)") {
                     // locked
@@ -434,7 +490,7 @@
                 else {
                     // unlocked
                     img.style.filter = "grayscale(100%)";
-                    img.style.opacity = "0.2";
+                    img.style.opacity = "0.5";
                     img.parentNode.parentNode.classList.remove("locked");
                 }
                 saveList();
@@ -474,7 +530,9 @@
                     else {
                         activityList.insertBefore(temp, activities[index + 1]);
                     }
-                } else activityList.insertBefore(temp, activityList.firstChild);
+                } else {
+                    activityList.insertBefore(temp, activityList.firstChild);
+                }
                 
                 // obligatory functions after editing list
                 activateCallBackFunctions(temp);
@@ -491,23 +549,33 @@
                 var ppStart;
                 var ppDur;
                 $(cpStart).clockpicker({
-                    afterShow: function(self) { ppStart = self; },
+                    afterShow: function(self) { 
+                        ppStart = self; 
+                    }
                 });
                 $(cpDur).clockpicker({
-                    afterShow: function(self) { ppDur = self; },
+                    afterShow: function(self) { 
+                        ppDur = self; 
+                    }
                 });
                 
                 // watches name input field for activity to save changes
                 var nameInput = getInput(activity, "activity-name");
                 nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
                 });
-                nameInput.onblur = function() { saveList(); };
+                nameInput.onblur = function() { 
+                    saveList(); 
+                };
                 
                 // watches start time input field for activity to update list
                 var startInput = getInput(activity, "activity-start");
                 startInput.addEventListener("keyup", function(event) { 
-                    if (event.key === "Enter") { $(startInput).trigger("blur"); }
+                    if (event.key === "Enter") { 
+                        $(startInput).trigger("blur"); 
+                    }
                 });
                 startInput.onfocus = function() { 
                     $( "#activity-list" ).sortable( "disable" );
@@ -515,7 +583,9 @@
                 };
                 startInput.onblur = function() {
                     $( "#activity-list" ).sortable( "enable" );
-                    if (ppStart) ppStart.hide(); // hides clockpicker popover when start time input blurs
+                    if (ppStart) {
+                        ppStart.hide(); 
+                    }
                     isEditing = false;  // updates whether the user editing for updateStatus
                     startInput.value = startInput.value.trim();
                     checkTimeInput(activity);   // verifies input value
@@ -524,7 +594,9 @@
                 // watches duration time input field for activity to update list
                 var durationInput = getInput(activity, "activity-duration");
                 durationInput.addEventListener("keyup", function(event) { 
-                    if (event.key === "Enter") { $(durationInput).trigger("blur"); }
+                    if (event.key === "Enter") { 
+                        $(durationInput).trigger("blur"); 
+                    }
                 });
                 durationInput.onfocus = function() {
                     $( "#activity-list" ).sortable( "disable" );
@@ -532,7 +604,9 @@
                 }
                 durationInput.onblur = function() {
                     $( "#activity-list" ).sortable( "enable" );
-                    if (ppDur) ppDur.hide(); // hides clockpicker popover when duration time input blurs
+                    if (ppDur) {
+                        ppDur.hide();
+                    }
                     isEditing = false;
                     durationInput.value = durationInput.value.trim();
                     if (checkDurationInput(activity)) {
@@ -544,14 +618,12 @@
             }
             // activateCallBackFunctions helper to verify start time input
             function checkTimeInput(activity) {
-                $(".alert").alert('close');
+                $(".alert").alert("close");
                 // if input field is valid, inserts the updated activity
                 if (isValidTimeInput(getInput(activity, "activity-start"))) {
                     insertActivity(activity);
                     updateDuration();
-                }
-                // if input field is NOT valid, presents error
-                else {
+                } else {  // if input field is NOT valid, presents error
                     // creates alert element
                     var msg = "<strong>Invalid input.</strong> Must be in format XX:XX (ex. 10:30)" +
                         "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
@@ -560,8 +632,9 @@
                     createAlert(activity, "start", msg);
                 }
             }
+            // function to verify duration input
             function checkDurationInput(activity) {
-                $(".alert").alert('close');
+                $(".alert").alert("close");
                 var durationInput = getInput(activity, "activity-duration");
                 if (isValidTimeInput(durationInput)) {
                     durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
@@ -580,6 +653,7 @@
                     }
                 }
             }
+            // functtion to create an alert for invalid input
             function createAlert(activity, type, msg) {
                 var alert = document.createElement("DIV");
                 alert.style = "text-align: center; margin-bottom: 0px";

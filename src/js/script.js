@@ -1,6 +1,6 @@
 // function to read name input for templates and change if valid
 function changeTemplateName(nameInput, listItem) {
-    $(".alert").alert('close');
+    $(".alert").alert("close");
     if (nameInput.value != "") {
         var templateNames = JSON.parse(localStorage.getItem("template-names"));
         for (var i = 0; i < templateNames.length; i++) {
@@ -33,25 +33,29 @@ function raiseTemplateAlert(nameInput, listItem) {
 }
 // function to move template data from one name to the other
 function moveTemplateData(prev, curr) {
-    if (localStorage.getItem("store-start-"+prev)) {
-        localStorage.setItem("store-start-"+curr, localStorage.getItem("store-start-"+prev));
-        localStorage.setItem("store-name-"+curr, localStorage.getItem("store-name-"+prev));
-        removeTemplateData("store-start-"+prev);
-        removeTemplateData("store-name-"+prev);
+    if (localStorage.getItem("store-start-" + prev)) {
+        localStorage.setItem("store-start-" + curr, localStorage.getItem("store-start-" + prev));
+        localStorage.setItem("store-name-" + curr, localStorage.getItem("store-name-" + prev));
+        removeTemplateData("store-start-" + prev);
+        removeTemplateData("store-name-" + prev);
 
     }
 }
 // function to delete the data assigned to a template name
 function removeTemplateData(id) {
-    if (localStorage.getItem("store-start-"+id)) {
-        localStorage.removeItem("store-start-"+id);
-        localStorage.removeItem("store-name-"+id);
+    if (localStorage.getItem("store-start-" + id)) {
+        localStorage.removeItem("store-start-" + id);
+        localStorage.removeItem("store-name-" + id);
     }
 }
 
 // function to return the index value of a child node
 function getIndex(node, list) {
-    for (i = 0; i < list.length; i++) { if (node == list[i]) break; }
+    for (i = 0; i < list.length; i++) { 
+        if (node == list[i]) {
+            break; 
+        }
+    }
     return i;
 }
 
@@ -61,12 +65,16 @@ function last(list) {
 }
 
 // function to retrieve the input element with shorter syntax
-function getInput(listItem, className) { return listItem.getElementsByClassName(className)[0]; }
+function getInput(listItem, className) { 
+    return listItem.getElementsByClassName(className)[0]; 
+}
 
 // function to retrieve input values
 function inputValueArray(list, inputClass) {
     var a = [];
     var inputs = list.getElementsByClassName(inputClass);
-    for (var i = 0; i < inputs.length; i++) { a.push(inputs[i].value); }
+    for (var i = 0; i < inputs.length; i++) { 
+        a.push(inputs[i].value); 
+    }
     return a;
 }

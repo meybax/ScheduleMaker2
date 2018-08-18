@@ -15,7 +15,9 @@
         <link href="css/style.css" rel="stylesheet">
         <!-- General CSS Style -->
         <style>
-            .complete { opacity: 0.5 }
+            .complete { 
+                opacity: 0.5 
+            }
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
@@ -34,10 +36,11 @@
                 taskList = document.getElementById("task-list");
                 taskTemplate = document.getElementById("task-template").cloneNode(true);
                 taskTemplate.style.display = "block";
-                
-                if (localStorage.getItem(listType+"-tdl-name")) {
+
+                // loads existing list
+                if (localStorage.getItem(listType + "-tdl-name")) {
                     // retrieves data from local storage
-                    var names = JSON.parse(localStorage.getItem(listType+"-tdl-name"));
+                    var names = JSON.parse(localStorage.getItem(listType + "-tdl-name"));
 
                     for (var i = 0; i < names.length; i++) {
                         var newTask = taskTemplate.cloneNode(true);
@@ -45,15 +48,18 @@
                         addTask(newTask);
                     }     
                 }
-                if (!taskList.firstChild) addTask(taskTemplate);
+                if (!taskList.firstChild) {
+                    addTask(taskTemplate);
+                }
 
             };
 
+            // function to save list
             function saveList() {
                 var names = inputValueArray(taskList, "task-name");
                 var descriptions = inputValueArray(taskList, "task-description");                  
-                localStorage.setItem(listType+"-tdl-name", JSON.stringify(names));
-                localStorage.setItem(listType+"-tdl-description", JSON.stringify(descriptions));
+                localStorage.setItem(listType + "-tdl-name", JSON.stringify(names));
+                localStorage.setItem(listType + "-tdl-description", JSON.stringify(descriptions));
             }
 
         </script>
@@ -99,14 +105,19 @@
             // function to delete activity when closed
             function remove(task) {
                 $(task).remove();
-                if (taskList.getElementsByTagName("LI")[0] == null) addTask(taskTemplate);
+                if (taskList.getElementsByTagName("LI")[0] == null) {
+                    addTask(taskTemplate);
+                }
                 saveList();
             }
             
+            // function to toggle the status of tasks
             function toggleStatus(checkbox) {
                 var task = checkbox.parentNode;
                 task.classList.remove("complete");
-                if (checkbox.checked) task.classList.add("complete");
+                if (checkbox.checked) {
+                    task.classList.add("complete");
+                }
             }
         </script>
 
@@ -119,6 +130,7 @@
             <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addTask(taskTemplate)">Add</button>
         </div>
         <script type="text/javascript">
+            // activates sortable
             $( function() {
                 $( "#task-list" ).sortable({
                     stop: function(event, ui) {
@@ -128,6 +140,7 @@
                 $( "#task-list" ).disableSelection();
             } );
 
+            // function to add new task
             function addTask(task) {
                 var newTask = task.cloneNode(true);
                 activateCallbackFunctions(newTask);
@@ -135,12 +148,17 @@
                 taskList.appendChild(newTask);
                 saveList();
             }
+            // function activating all call back functions on each task
             function activateCallbackFunctions(task) {
                 var nameInput = getInput(task, "task-name");
                 nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") $(nameInput).trigger("blur");
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
                 });
-                nameInput.onblur = function() { saveList(); };
+                nameInput.onblur = function() { 
+                    saveList(); 
+                };
             }
         </script>
 
