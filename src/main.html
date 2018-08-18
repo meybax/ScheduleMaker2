@@ -15,9 +15,18 @@
         <link href="css/style.css" rel="stylesheet">
         <!-- General CSS Style -->
         <style>
-            .current { background-color:  rgb(25, 25, 200); }
-            .past { opacity: 0.75; }
-            .popover { margin-left: 115px; }
+            .current { 
+                background-color:  rgb(25, 25, 200); 
+            }
+            .past { 
+                opacity: 0.5; 
+            }
+            .popover { 
+                margin-left: 115px; 
+            }
+            .locked input {
+                font-weight: 800;
+            }
             input.changed {
                 animation-name: flash;
                 animation-duration: 0.75s;
@@ -47,6 +56,13 @@
                 activityList = document.getElementById("activity-list");
                 templateActivity = document.getElementById("template-activity").cloneNode(true);
                 templateActivity.style.display = "block";
+
+                if (localStorage.getItem("store-locked-sched")) {
+                    var lockedItems = JSON.parse(localStorage.getItem("store-locked-sched"));
+                } else {
+                    var lockedItems = [];
+                }
+
                 // loads stored schedule if exists
                 if (localStorage.getItem("store-start-sched")) {
                     // retrieves data from local storage
@@ -61,9 +77,16 @@
                         getInput(newActivity, "activity-name").value = names[i];
                         getInput(newActivity, "activity-duration").value = durations[i];
                         addActivity(newActivity);
-                    }           
+                    }    
+                    
+                    var activities = getActivities();
+                    for (var i = 0; i < lockedItems.length; i++) {
+                        toggleLocked(activities[lockedItems[i]].getElementsByTagName('img')[0]);
+                    }
                 } 
-                if (!activityList.firstChild) addDefaultActivity();
+                if (!activityList.firstChild) {
+                    addDefaultActivity();
+                }
                 
                 // function to update the status of each activity
                 (function updateStatus() {
@@ -112,10 +135,23 @@
             function saveList() {
                 var starts = inputValueArray(activityList, "activity-start");
                 var names = inputValueArray(activityList, "activity-name");
-                var durations = inputValueArray(activityList, "activity-duration");                
+                var durations = inputValueArray(activityList, "activity-duration");
+                var lockedItems = getLocked();                
                 localStorage.setItem("store-start-sched", JSON.stringify(starts));
                 localStorage.setItem("store-name-sched", JSON.stringify(names));
                 localStorage.setItem("store-duration-sched", JSON.stringify(durations));
+                localStorage.setItem("store-locked-sched", JSON.stringify(lockedItems));
+            }
+            function getLocked() {
+                var lockedIndex = [];
+                var activities = getActivities();
+                for (var i = 0; i < activities.length; i++) {
+                    var activity = activities[i];
+                    if ($(activity).hasClass("locked")) {
+                        lockedIndex.push(i);
+                    }
+                }
+                return lockedIndex;
             }
             
             // function to iterate through activities to change the duration
@@ -152,12 +188,19 @@
                     var start = getInput(activities[i], "activity-start");
                     var timePrev = getInput(activities[i-1], "activity-start").value;
                     var duration = getInput(activities[i-1], "activity-duration").value;
-                    if (start.value !== timeSum(timePrev, duration, true)) {
-                        start.classList.add("changed");
-                        setTimeout(endAnimation.bind(null, start), 750);
-                        start.value = timeSum(timePrev, duration, true);
+                    if (!$(activities[i]).hasClass("locked")) {
+                        if (start.value !== timeSum(timePrev, duration, true)) {
+                            start.classList.add("changed");
+                            setTimeout(endAnimation.bind(null, start), 750);
+                            start.value = timeSum(timePrev, duration, true);
+                        }
+                    } else { 
+                        if (i != getIndex(insertActivity(activities[i]), activities)) {
+                            i = 0;
+                        }
                     }
                 }
+                updateDuration();
             }
             function timeSum(time, duration, subtract24) {
                 duration = durationStrToNum(duration);
@@ -309,17 +352,18 @@
         <!-- Template Activity -->
         <li class="list-group-item text-light" style="display: none;" id="template-activity"> 
             <div class="row">
+                <img src="images/Lock.png" width="20" height="20" onclick="toggleLocked(this)" style="filter: grayscale(100%); margin-top: 1.5%; margin-left: 10px; opacity: 0.5;"/>
                 <div class="col-sm text-center">
                     <div class="input-group clockpicker" data-autoclose="true">
-                        <input type="text" class="form-control-plaintext activity-start" placeholder="Start Time" style="margin-left: 15px">
+                        <input type="text" class="form-control-plaintext activity-start" placeholder="Start Time">
                     </div>
                 </div>
                 <div class="col-sm text-center">
-                    <input type="text" class="form-control-plaintext activity-name" placeholder="Name" style="margin-left: 15px">
+                    <input type="text" class="form-control-plaintext activity-name" placeholder="Name">
                 </div>
                 <div class="col-sm text-center">
                     <div class="input-group clockpicker" data-autoclose="true">
-                        <input type="text" class="form-control-plaintext activity-duration" placeholder = "Duration" style="margin-left: 15px">
+                        <input type="text" class="form-control-plaintext activity-duration" placeholder = "Duration">
                     </div>
                 </div>
                 <button type="button" class="close" aria-label="Close" style="margin-right: 10px;" onclick="remove(this.parentNode.parentNode)">
@@ -345,6 +389,7 @@
             $( function() {
                 $( "#activity-list" ).sortable({
                     scroll: true,
+                    cancel: ".locked, input",
                     start: function(event, ui) {
                         isEditing = true;
                     },
@@ -356,6 +401,22 @@
                 });
                 $( "#activity-list" ).disableSelection();
             } );
+
+            function toggleLocked(img) {
+                if (img.style.filter === "grayscale(100%)") {
+                    // locked
+                    img.style.filter = "none";
+                    img.style.opacity = "1";
+                    img.parentNode.parentNode.classList.add("locked");
+                }
+                else {
+                    // unlocked
+                    img.style.filter = "grayscale(100%)";
+                    img.style.opacity = "0.5";
+                    img.parentNode.parentNode.classList.remove("locked");
+                }
+                saveList();
+            }
         </script>
 
         <!-- Add Activity Button -->
@@ -381,16 +442,23 @@
                 var activities = getActivities();
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
-                if (activities.length > 0) {
-                    while (index < activities.length && tempTime > getInput(activities[index], "activity-start").value) index++;
-                    if (index == activities.length) $(last(activities)).after(temp);
-                    else activityList.insertBefore(temp, activities[index]);
+                if (activities.length > 0 && tempTime > getInput(activities[index], "activity-start").value) {
+                    while (index < activities.length - 1 && tempTime > timeSum(getInput(activities[index], "activity-start").value, getInput(activities[index], "activity-duration").value)) {
+                        index++;
+                    }
+                    if (index == activities.length - 1) {
+                        $(last(activities)).after(temp);
+                    }
+                    else {
+                        activityList.insertBefore(temp, activities[index + 1]);
+                    }
                 } else activityList.insertBefore(temp, activityList.firstChild);
                 
                 // obligatory functions after editing list
-                updateDuration();
                 activateCallBackFunctions(temp);
                 saveList();
+
+                return temp;
             }
             
             // function to establish call back functions for each new activity
@@ -402,11 +470,9 @@
                 var ppDur;
                 $(cpStart).clockpicker({
                     afterShow: function(self) { ppStart = self; },
-                    afterHide: function() { document.activeElement.blur() }
                 });
                 $(cpDur).clockpicker({
                     afterShow: function(self) { ppDur = self; },
-                    afterHide: function() { document.activeElement.blur() }
                 });
                 
                 // watches name input field for activity to save changes
@@ -458,7 +524,10 @@
             function checkTimeInput(activity) {
                 $(".alert").alert('close');
                 // if input field is valid, inserts the updated activity
-                if (isValidTimeInput(getInput(activity, "activity-start"))) insertActivity(activity);
+                if (isValidTimeInput(getInput(activity, "activity-start"))) {
+                    insertActivity(activity);
+                    updateDuration();
+                }
                 // if input field is NOT valid, presents error
                 else {
                     // creates alert element
