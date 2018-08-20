@@ -55,7 +55,8 @@
         <script type="text/javascript">
 
             var isEditing = false;  // variable checking whether the user is editing the start time
-            var activityList, templateActivity;        
+            var notify = false;
+            var activityList, templateActivity, currentActivity;     
                        
             window.onload = function() {
                 // initializes variables containing the activity list and the template for activities
@@ -96,6 +97,12 @@
                 if (!activityList.firstChild) {
                     addDefaultActivity();
                 }
+
+                var audio = document.getElementById("notif");
+                var notifName;
+                audio.addEventListener('ended', function(){
+                    alert(notifName + " has started.");
+                });
                 
                 // function to update the status of each activity
                 (function updateStatus() {
@@ -113,11 +120,17 @@
                                 var tempTime = getInput(activities[i], "activity-start").value;
                                 var end = timeSum(tempTime, getInput(activities[i], "activity-duration").value, false);
                                 if (currTime < tempTime) {
+                                    currentActivity = null;
                                     clearStatus(activities[i]);
                                     isFound = true;
                                 } else if (currTime < end) {
+                                    if (currentActivity !== activities[i] && currTime === tempTime && notify) {
+                                        notifName = getInput(activities[i], "activity-name").value;
+                                        audio.play();
+                                    }
                                     updateCurrent(activities[i]);
                                     isFound = true;
+                                    currentActivity = activities[i];
                                 } else {
                                     updatePast(activities[i]);
                                 }
@@ -179,6 +192,7 @@
                         dur.value = timeDifference(time, timeNext);
                     }
                 }
+                saveList();
             }
             // updateDuration helper function to calculate time difference
             function timeDifference(curr, next) {
@@ -401,6 +415,8 @@
 
     <body style="background-color: black">
 
+        <audio id="notif" src="sounds/notification.mp3" preload="auto"></audio>
+
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" data-spy="affix" style="font-size: 30px;">
             <a class="navbar-brand" href="main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
@@ -418,7 +434,23 @@
                     <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
+            <button class="btn btn-danger order-3 btn-lg" type="button" onclick="toggleNotifications(this)">Notifications: Off</button>
         </nav>
+        <script type="text/javascript">
+            function toggleNotifications(button) {
+                if (notify) {
+                    button.classList.remove("btn-success");
+                    button.classList.add("btn-danger");
+                    button.innerHTML = "Notifications: Off";
+                    notify = false;
+                } else {
+                    button.classList.remove("btn-danger");
+                    button.classList.add("btn-success");
+                    button.innerHTML = "Notifications: On";
+                    notify = true;
+                }
+            }
+        </script>
 
         <!-- Template Activity -->
         <li class="list-group-item text-light" style="display: none;" id="template-activity"> 
@@ -516,14 +548,14 @@
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
                 if (activities.length > 0 && tempTime > getInput(activities[index], "activity-start").value) {
-                    while (index < activities.length - 1 && tempTime > timeSum(getInput(activities[index], "activity-start").value, getInput(activities[index], "activity-duration").value)) {
+                    while (index < activities.length - 1 && tempTime > getInput(activities[index], "activity-start").value) {
                         index++;
                     }
                     if (index == activities.length - 1) {
                         $(last(activities)).after(temp);
                     }
                     else {
-                        activityList.insertBefore(temp, activities[index + 1]);
+                        activityList.insertBefore(temp, activities[index]);
                     }
                 } else {
                     activityList.insertBefore(temp, activityList.firstChild);

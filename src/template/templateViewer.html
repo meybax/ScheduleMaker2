@@ -112,6 +112,7 @@
                     }
                 });
                 nameInput.onblur = function() { 
+                    nameInput.value = nameInput.value.trim();
                     changeTemplateName(nameInput, template); 
                     saveList();
                 };

@@ -69,7 +69,9 @@
                     }
                 });
                 nameInput.onblur = function() { 
-                    var prev = changeTemplateName(nameInput, templateName); 
+                    nameInput.value = nameInput.value.trim();
+                    localStorage.setItem("edit-template", nameInput.value);
+                    var prev = changeTemplateName(nameInput, templateName);
                     updateTemplateNames(prev, templateName.id);
                 };
 
@@ -110,6 +112,7 @@
                     var names = JSON.parse(localStorage.getItem("template-names"));
                     names[getIndex(prev.substring(11), names)] = curr.substring(11);
                     localStorage.setItem("template-names", JSON.stringify(names));
+                    saveList();
                 }
             }
             
@@ -521,14 +524,14 @@
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
                 if (activities.length > 0 && tempTime > getInput(activities[index], "activity-start").value) {
-                    while (index < activities.length - 1 && tempTime > timeSum(getInput(activities[index], "activity-start").value, getInput(activities[index], "activity-duration").value)) {
+                    while (index < activities.length - 1 && tempTime > getInput(activities[index], "activity-start").value) {
                         index++;
                     }
                     if (index == activities.length - 1) {
                         $(last(activities)).after(temp);
                     }
                     else {
-                        activityList.insertBefore(temp, activities[index + 1]);
+                        activityList.insertBefore(temp, activities[index]);
                     }
                 } else {
                     activityList.insertBefore(temp, activityList.firstChild);
