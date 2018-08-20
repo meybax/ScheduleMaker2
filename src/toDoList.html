@@ -29,7 +29,7 @@
         <!-- Global Functions -->
         <script type="text/javascript">
 
-            var templateTask, taskList, listType;
+            var templateTask, taskList;
                         
             window.onload = function() {
 
@@ -37,29 +37,58 @@
                 taskTemplate = document.getElementById("task-template").cloneNode(true);
                 taskTemplate.style.display = "block";
 
+                // retrieve list of checked activities
+                if (localStorage.getItem("tdl-checked")) {
+                    var checkedItems = JSON.parse(localStorage.getItem("tdl-checked"));
+                } else {
+                    var checkedItems = [];
+                }
+
                 // loads existing list
-                if (localStorage.getItem(listType + "-tdl-name")) {
+                if (localStorage.getItem("tdl-name")) {
                     // retrieves data from local storage
-                    var names = JSON.parse(localStorage.getItem(listType + "-tdl-name"));
+                    var names = JSON.parse(localStorage.getItem("tdl-name"));
 
                     for (var i = 0; i < names.length; i++) {
                         var newTask = taskTemplate.cloneNode(true);
                         getInput(newTask, "task-name").value = names[i];
                         addTask(newTask);
                     }     
+
+                    // iterates through list to toggle checked tasks
+                    for (var i = 0; i < checkedItems.length; i++) {
+                        var tasks = taskList.getElementsByClassName("list-group-item");
+                        var checkBox = tasks[checkedItems[i]].getElementsByClassName("chk")[0];
+                        checkBox.checked = true;
+                        tasks[checkedItems[i]].classList.add("complete");
+                    }
                 }
                 if (!taskList.firstChild) {
                     addTask(taskTemplate);
                 }
+                saveList();
 
             };
 
             // function to save list
             function saveList() {
                 var names = inputValueArray(taskList, "task-name");
-                var descriptions = inputValueArray(taskList, "task-description");                  
-                localStorage.setItem(listType + "-tdl-name", JSON.stringify(names));
-                localStorage.setItem(listType + "-tdl-description", JSON.stringify(descriptions));
+                var descriptions = inputValueArray(taskList, "task-description");  
+                var checked = getChecked();                
+                localStorage.setItem("tdl-name", JSON.stringify(names));
+                localStorage.setItem("tdl-description", JSON.stringify(descriptions));
+                localStorage.setItem("tdl-checked", JSON.stringify(checked));
+            }
+            function getChecked() {
+                var checkedIndices = [];
+                var tasks = taskList.getElementsByClassName("list-group-item");
+                for (var i = 0; i < tasks.length; i++) {
+                    var task = tasks[i];
+                    if ($(task).hasClass("complete")) {
+                        checkedIndices.push(i);
+                    }
+                }
+                return checkedIndices;
             }
 
         </script>
@@ -89,7 +118,7 @@
 
         <!-- Task Template-->
         <li class="list-group-item" style="display: none;" id="task-template">
-            <input type="checkbox" style="position: absolute; top: 50%; left: 2.5%; transform: translate(-50%, -50%);" onclick="toggleStatus(this)">
+            <input type="checkbox" class="chk" style="position: absolute; top: 50%; left: 2.5%; transform: translate(-50%, -50%);" onclick="toggleStatus(this)">
             <div class="col text-left" style="margin-left: 30px;">
                 <div class="row">
                     <div class="col">
@@ -114,10 +143,15 @@
             // function to toggle the status of tasks
             function toggleStatus(checkbox) {
                 var task = checkbox.parentNode;
+                var list = taskList.getElementsByClassName("list-group-item");
                 task.classList.remove("complete");
                 if (checkbox.checked) {
                     task.classList.add("complete");
+                    var temp = task.cloneNode(true);
+                    $(task).remove();
+                    addTask(temp);
                 }
+                saveList();
             }
         </script>
 
