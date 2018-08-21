@@ -98,7 +98,7 @@
     <body style="background-color: black">
 
        <!-- Navbar -->
-       <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" data-spy="affix" style="font-size: 30px;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" data-spy="affix" style="font-size: 30px;">
             <a class="navbar-brand" href="main.html" style="color: deepskyblue; font-size: 35px;">Schedule Maker</a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
@@ -114,7 +114,23 @@
                     <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
+            <button class="btn btn-danger order-3 btn-lg" type="button" onclick="clearCompleted()">Clear Completed</button>
         </nav>
+        <script type="text/javascript">
+            function clearCompleted() {
+                var list = taskList.getElementsByClassName("list-group-item");
+                for (var i = list.length - 1; i >= 0; i--) {
+                    if (!list[i].classList.contains("complete")) {
+                        break;
+                    }
+                    $(list[i]).remove();
+                }
+                if (taskList.getElementsByTagName("LI")[0] == null) {
+                    addTask(taskTemplate);
+                }
+                saveList();
+            }
+        </script>
 
         <!-- Task Template-->
         <li class="list-group-item" style="display: none;" id="task-template">
