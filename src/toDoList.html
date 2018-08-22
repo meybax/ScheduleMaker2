@@ -108,7 +108,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="template/templateViewer.html">Templates</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="toDoList.html">To-Do List</a>
                 </li>
                 <li class="nav-item">
@@ -161,12 +161,14 @@
             function toggleStatus(checkbox) {
                 var task = checkbox.parentNode;
                 var list = taskList.getElementsByClassName("list-group-item");
-                task.classList.remove("complete");
                 if (checkbox.checked) {
                     task.classList.add("complete");
                     var temp = task.cloneNode(true);
                     $(task).remove();
                     addTask(temp);
+                } else {
+                    task.classList.remove("complete");
+                    addTask(task);
                 }
                 saveList();
             }
@@ -184,6 +186,7 @@
             // activates sortable
             $( function() {
                 $( "#task-list" ).sortable({
+                    items: "li:not(.complete)",
                     stop: function(event, ui) {
                         saveList();
                     }
@@ -193,10 +196,21 @@
 
             // function to add new task
             function addTask(task) {
-                var newTask = task.cloneNode(true);
-                activateCallbackFunctions(newTask);
+                var temp = task.cloneNode(true);
+                activateCallbackFunctions(temp);
+                $(task).remove();
 
-                taskList.appendChild(newTask);
+                var list = taskList.getElementsByClassName("list-group-item");
+                if (list.length > 0) {
+                    for (var i = list.length - 1; i >= 0; i--) {
+                        if (!list[i].classList.contains("complete")) {
+                            $(list[i]).after(temp);
+                            break;
+                        }
+                    }
+                } else {
+                    taskList.appendChild(temp);
+                }
                 saveList();
             }
             // function activating all call back functions on each task
