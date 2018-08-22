@@ -7,6 +7,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Planner</title>
+        <link rel="icon" href="images/Icon.png">
 
         <!-- CSS Libraries/Plug-Ins -->
         <link href="css/bootstrap.css" rel="stylesheet">
@@ -15,20 +16,39 @@
         <link href="css/style.css" rel="stylesheet">
         <!-- General CSS Style -->
         <style>
+            .table {
+                display: table;
+                margin: 0 auto;
+            }
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
         <script src="js/jquery.js"></script>
+        <script src="js/jquery-ui.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="js/clockpicker.js"></script>
         <script src="js/script.js"></script>
         <!-- Global Functions -->
         <script type="text/javascript">
+
+            var subjectList, subjectTemplate, assignmentTemplate;
                         
-            // loads stored schedule when window is opened
+            // loads stored planner when window is opened
             window.onload = function() {
+
+                subjectList = document.getElementById("subject-list");
+                subjectTemplate = document.getElementById("subject-template").cloneNode(true);
+                subjectTemplate.style.display = "block";
+                assignmentTemplate = document.getElementById("assignment-template").cloneNode(true);
+                assignmentTemplate.style.display = "block";
+
+                addSubject(subjectTemplate);
                 
             };
+
+            function saveList() {
+
+            }
 
         </script>
 
@@ -53,7 +73,76 @@
                     <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
+            <button class="btn btn-success order-3 btn-lg" type="button" onclick="addSubject(subjectTemplate)">Add Subject</button>
         </nav>
+        <script type="text/javascript">
+            function addSubject(subject) {
+                var newSubject = subject.cloneNode(true);
+                addAssignment(assignmentTemplate, newSubject.getElementsByClassName("btn-success")[0])
+                // activateCallBackFunctions(newActivity);
+
+                subjectList.appendChild(newSubject);
+                // saveList();
+            }
+            function activateSubjectCBF(subject) {
+
+            }
+        </script>
+
+        <!-- Subject Template -->
+        <li class="list-group-item text-light card" style="display: none;" id="subject-template"> 
+            <div class="row">
+                <input type="text" class="form-control-plaintext subject-name" style="font-size: 50px;" placeholder="Subject Name">
+            </div>
+            <div class="row table" style="margin-bottom: 5px; text-align: center">
+                <ul class="list-group list-group-flush assignment-list" style="font-size: 20px;"></ul>
+            </div>
+            <div class="row" style="margin-bottom: 20px;">
+                <div class="col">
+                    <button class="btn btn-info order-3 btn-lg btn-block" type="button" onclick="" style="margin-left: 5%;">Sort</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addAssignment(assignmentTemplate, this)" style="margin-right: 5%;">Add Assignment</button>
+                </div>
+            </div>
+            <div class="row">
+                <button class="btn btn-danger order-3 btn-lg btn-block" type="button" onclick="$(this.parentNode.parentNode).remove();">Delete</button>
+            </div>
+        </li>
+        <script type="text/javascript">
+            function addAssignment(assignment, button) {
+                var list = button.parentNode.parentNode.parentNode.getElementsByClassName("assignment-list")[0];
+                var newAssignment = assignment.cloneNode(true);
+                // activateCallBackFunctions(newActivity);
+
+                list.appendChild(newAssignment);
+                // saveList();
+            }
+            function activateAssignmentCBF(assignment) {
+
+            }
+        </script>
+
+        <!-- Assignment Template -->
+        <li class="list-group-item text-light card" style="display: none;" id="assignment-template"> 
+            <div class="row">
+                <div class="col">
+                    <input type="text" class="form-control-plaintext subject-name" style="margin-left: 30px;" placeholder="Due Date">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control-plaintext subject-name" style="margin-left: 20px;" placeholder="Name">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control-plaintext subject-name" placeholder="Est. Duration">
+                </div>
+                <button type="button" class="close" aria-label="Close" onclick="$(this.parentNode.parentNode).remove()">
+                    <span aria-hidden="true" style="color: red;">&times;</span>
+                </button>
+            </div>
+        </li>
+
+        <!-- Subject List -->
+        <ul class="list-group" id="subject-list" style="font-size: 20px;"></ul>
 
     </body>
 
