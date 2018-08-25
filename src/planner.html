@@ -45,12 +45,48 @@
                 assignmentTemplate = document.getElementById("assignment-template").cloneNode(true);
                 assignmentTemplate.style.display = "block";
 
-                addSubject(subjectTemplate);
-                
+                if (localStorage.getItem("planner-subject-name")) {
+                   // retrieves data from local storage
+                   var subjectNames = JSON.parse(localStorage.getItem("planner-subject-name"));
+
+                    for (var i = 0; i < subjectNames.length; i++) {
+                        var newSubject = subjectTemplate.cloneNode(true);
+                        getInput(newSubject, "subject-name").value = subjectNames[i];
+
+
+                        var assignDates = JSON.parse(localStorage.getItem("planner-date-" + i));
+                        var assignNames = JSON.parse(localStorage.getItem("planner-name-" + i));
+                        var assignDurations = JSON.parse(localStorage.getItem("planner-duration-" + i));
+                        for (var j = 0; j < assignDates.length; j++) {
+                            var newAssignment = assignmentTemplate.cloneNode(true);
+                            getInput(newAssignment, "assign-date").value = assignDates[j];
+                            getInput(newAssignment, "assign-name").value = assignNames[j];
+                            getInput(newAssignment, "assign-duration").value = assignDurations[j];
+                            addAssignment(newAssignment, newSubject);
+                        }
+
+                        addSubject(newSubject, false);
+                    }     
+                } else {
+                    addSubject(subjectTemplate.cloneNode(true), true);
+                }
+ 
             };
 
             function saveList() {
-
+                var subjectNames = inputValueArray(subjectList, "subject-name");
+                localStorage.setItem("planner-subject-name", JSON.stringify(subjectNames));
+                
+                var list = subjectList.getElementsByClassName("card");
+                for (var i = 0; i < list.length; i++) {
+                    var assignList = list[i].getElementsByClassName("assignment-list")[0];
+                    var assignDates = inputValueArray(assignList, "assign-date");
+                    var assignNames = inputValueArray(assignList, "assign-name");
+                    var assignDurations = inputValueArray(assignList, "assign-duration");
+                    localStorage.setItem("planner-date-" + i, JSON.stringify(assignDates));
+                    localStorage.setItem("planner-name-" + i, JSON.stringify(assignNames));
+                    localStorage.setItem("planner-duration-" + i, JSON.stringify(assignDurations));
+                }
             }
 
         </script>
@@ -76,24 +112,19 @@
                     <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
-            <button class="btn btn-success order-3 btn-lg" type="button" onclick="addSubject(subjectTemplate)">Add Subject</button>
+            <button class="btn btn-success order-3 btn-lg" type="button" onclick="addSubject(subjectTemplate.cloneNode(true), true)">Add Subject</button>
         </nav>
         <script type="text/javascript">
-            function addSubject(subject) {
-                var newSubject = subject.cloneNode(true);
-                addAssignment(assignmentTemplate, newSubject.getElementsByClassName("btn-success")[0])
-                activateSubjectCBF(newSubject);
+            function addSubject(subject, isEmpty) {
+                if (isEmpty) {
+                    addAssignment(assignmentTemplate, subject)
+                }
+                activateSubjectCBF(subject);
 
-                subjectList.appendChild(newSubject);
-                // saveList();
+                subjectList.appendChild(subject);
+                saveList();
             }
             function activateSubjectCBF(subject) {
-                $(subject).on("remove", function() {
-                    if (subjectList.getElementsByClassName("card").length == 1) {
-                        addSubject(subjectTemplate);
-                    }
-                });
-
                 var nameInput = getInput(subject, "subject-name");
                 nameInput.addEventListener("keyup", function(event) {
                     if (event.key === "Enter") {
@@ -101,14 +132,14 @@
                     }
                 });
                 nameInput.onblur = function() { 
-                    // saveList(); 
+                    saveList(); 
                 };
 
                 var assignmentList = subject.getElementsByTagName("UL")[0];
                 // activates sortable
                 $( assignmentList ).sortable({
                     stop: function(event, ui) {
-                        // saveList();
+                        saveList();
                     }
                 });
                 $( assignmentList ).disableSelection();
@@ -128,7 +159,7 @@
                     <button class="btn btn-info order-3 btn-lg btn-block" type="button" onclick="">Sort</button>
                 </div>
                 <div class="col" style="margin-right: 20px; margin-left: -5px;">
-                    <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addAssignment(assignmentTemplate, this)">Add Assignment</button>
+                    <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addAssignment(assignmentTemplate, this.parentNode.parentNode.parentNode)">Add Assignment</button>
                 </div>
             </div>
             <div class="row">
@@ -165,23 +196,21 @@
                 $(modal).modal("hide");
                 var list = subjectList.getElementsByClassName("card");
                 $(list[removeIndex]).remove();
+                if (subjectList.getElementsByClassName("card").length == 0) {
+                    addSubject(subjectTemplate.cloneNode(true), true);
+                }
+                saveList();
             }
 
-            function addAssignment(assignment, button) {
-                var list = button.parentNode.parentNode.parentNode.getElementsByClassName("assignment-list")[0];
+            function addAssignment(assignment, subject) {
+                var list = subject.getElementsByClassName("assignment-list")[0];
                 var newAssignment = assignment.cloneNode(true);
-                activateAssignmentCBF(newAssignment, list, button);
+                activateAssignmentCBF(newAssignment);
 
                 list.appendChild(newAssignment);
-                // saveList();
+                saveList();
             }
-            function activateAssignmentCBF(assignment, list, button) {
-                $(assignment).on("remove", function() {
-                    if (list.getElementsByTagName("LI").length == 1) {
-                        addAssignment(assignmentTemplate, button);
-                    }
-                });
-
+            function activateAssignmentCBF(assignment) {
                 var dateInput = getInput(assignment, "assign-date");
                 dateInput.addEventListener("keyup", function(event) {
                     if (event.key === "Enter") {
@@ -190,7 +219,7 @@
                 });
                 dateInput.onblur = function() { 
                     dateInput.value = dateInput.value.trim();
-                    // saveList(); 
+                    saveList(); 
                 };
 
                 var nameInput = getInput(assignment, "assign-name");
@@ -200,7 +229,7 @@
                     }
                 });
                 nameInput.onblur = function() { 
-                    // saveList(); 
+                    saveList(); 
                 };
 
                 var durationInput = getInput(assignment, "assign-duration");
@@ -211,7 +240,7 @@
                 });
                 durationInput.onblur = function() { 
                     durationInput.value = durationInput.value.trim();
-                    // saveList(); 
+                    saveList(); 
                 };
             }
         </script>
@@ -228,11 +257,21 @@
                 <div class="col">
                     <input type="text" class="form-control-plaintext assign-duration" placeholder="Est. Duration">
                 </div>
-                <button type="button" class="close" aria-label="Close" onclick="$(this.parentNode.parentNode).remove()">
+                <button type="button" class="close" aria-label="Close" onclick="removeAssignment(this.parentNode.parentNode)">
                     <span aria-hidden="true" style="color: red;">&times;</span>
                 </button>
             </div>
         </li>
+        <script type="text/javascript">
+            function removeAssignment(assignment) {
+                var assignList = assignment.parentNode;
+                $(assignment).remove();
+                if (assignList.getElementsByTagName("LI").length == 0) {
+                    addAssignment(assignmentTemplate, assignList.parentNode.parentNode);
+                }
+                saveList();
+            }
+        </script> 
 
         <!-- Subject List -->
         <ul class="list-group" id="subject-list" style="font-size: 20px;"></ul>
@@ -240,7 +279,7 @@
             // activates sortable
             $( "#subject-list" ).sortable({
                 stop: function(event, ui) {
-                    // saveList();
+                    saveList();
                 }
             });
             $( "#subject-list" ).disableSelection();
