@@ -52,7 +52,7 @@ function removeTemplateData(id) {
 // function to return the index value of a child node
 function getIndex(node, list) {
     for (i = 0; i < list.length; i++) { 
-        if (node == list[i]) {
+        if (node === list[i]) {
             break; 
         }
     }

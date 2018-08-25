@@ -32,9 +32,12 @@
         <script type="text/javascript">
 
             var subjectList, subjectTemplate, assignmentTemplate;
+            var modal, removeIndex;
                         
             // loads stored planner when window is opened
             window.onload = function() {
+
+                modal = document.getElementsByClassName("modal")[0];
 
                 subjectList = document.getElementById("subject-list");
                 subjectTemplate = document.getElementById("subject-template").cloneNode(true);
@@ -79,13 +82,36 @@
             function addSubject(subject) {
                 var newSubject = subject.cloneNode(true);
                 addAssignment(assignmentTemplate, newSubject.getElementsByClassName("btn-success")[0])
-                // activateCallBackFunctions(newActivity);
+                activateSubjectCBF(newSubject);
 
                 subjectList.appendChild(newSubject);
                 // saveList();
             }
             function activateSubjectCBF(subject) {
+                $(subject).on("remove", function() {
+                    if (subjectList.getElementsByClassName("card").length == 1) {
+                        addSubject(subjectTemplate);
+                    }
+                });
 
+                var nameInput = getInput(subject, "subject-name");
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
+                });
+                nameInput.onblur = function() { 
+                    // saveList(); 
+                };
+
+                var assignmentList = subject.getElementsByTagName("UL")[0];
+                // activates sortable
+                $( assignmentList ).sortable({
+                    stop: function(event, ui) {
+                        // saveList();
+                    }
+                });
+                $( assignmentList ).disableSelection();
             }
         </script>
 
@@ -106,34 +132,101 @@
                 </div>
             </div>
             <div class="row">
-                <button class="btn btn-danger order-3 btn-lg btn-block" type="button" onclick="$(this.parentNode.parentNode).remove();">Delete</button>
+                <button class="btn btn-danger order-3 btn-lg btn-block" type="button" onclick="confirm(this.parentNode.parentNode)">Delete</button>
             </div>
         </li>
+        <!-- Confirmation Modal -->
+        <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    The subject will be permanently deleted.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="removeSubject()">Delete</button>
+                </div>
+                </div>
+            </div>
+        </div>
         <script type="text/javascript">
+            function confirm(subject) {
+                var list = subjectList.getElementsByClassName("card");
+                removeIndex = getIndex(subject, list);
+                $(modal).modal("show");
+            }
+            function removeSubject() {
+                $(modal).modal("hide");
+                var list = subjectList.getElementsByClassName("card");
+                $(list[removeIndex]).remove();
+            }
+
             function addAssignment(assignment, button) {
                 var list = button.parentNode.parentNode.parentNode.getElementsByClassName("assignment-list")[0];
                 var newAssignment = assignment.cloneNode(true);
-                // activateCallBackFunctions(newActivity);
+                activateAssignmentCBF(newAssignment, list, button);
 
                 list.appendChild(newAssignment);
                 // saveList();
             }
-            function activateAssignmentCBF(assignment) {
+            function activateAssignmentCBF(assignment, list, button) {
+                $(assignment).on("remove", function() {
+                    if (list.getElementsByTagName("LI").length == 1) {
+                        addAssignment(assignmentTemplate, button);
+                    }
+                });
 
+                var dateInput = getInput(assignment, "assign-date");
+                dateInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        $(dateInput).trigger("blur");
+                    }
+                });
+                dateInput.onblur = function() { 
+                    dateInput.value = dateInput.value.trim();
+                    // saveList(); 
+                };
+
+                var nameInput = getInput(assignment, "assign-name");
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
+                });
+                nameInput.onblur = function() { 
+                    // saveList(); 
+                };
+
+                var durationInput = getInput(assignment, "assign-duration");
+                durationInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        $(durationInput).trigger("blur");
+                    }
+                });
+                durationInput.onblur = function() { 
+                    durationInput.value = durationInput.value.trim();
+                    // saveList(); 
+                };
             }
         </script>
 
         <!-- Assignment Template -->
-        <li class="list-group-item text-light card" style="display: none;" id="assignment-template"> 
+        <li class="list-group-item text-light" style="display: none;" id="assignment-template"> 
             <div class="row">
                 <div class="col">
-                    <input type="text" class="form-control-plaintext subject-name" style="margin-left: 20px;" placeholder="Due Date">
+                    <input type="text" class="form-control-plaintext assign-date" style="margin-left: 20px;" placeholder="Due Date">
                 </div>
                 <div class="col">
-                    <input type="text" class="form-control-plaintext subject-name" style="margin-left: 10px;" placeholder="Name">
+                    <input type="text" class="form-control-plaintext assign-name" style="margin-left: 10px;" placeholder="Name">
                 </div>
                 <div class="col">
-                    <input type="text" class="form-control-plaintext subject-name" placeholder="Est. Duration">
+                    <input type="text" class="form-control-plaintext assign-duration" placeholder="Est. Duration">
                 </div>
                 <button type="button" class="close" aria-label="Close" onclick="$(this.parentNode.parentNode).remove()">
                     <span aria-hidden="true" style="color: red;">&times;</span>
@@ -143,6 +236,15 @@
 
         <!-- Subject List -->
         <ul class="list-group" id="subject-list" style="font-size: 20px;"></ul>
+        <script type="text/javascript">
+            // activates sortable
+            $( "#subject-list" ).sortable({
+                stop: function(event, ui) {
+                    // saveList();
+                }
+            });
+            $( "#subject-list" ).disableSelection();
+        </script>
 
     </body>
 

@@ -195,7 +195,7 @@
                 var index = getIndex(template, templateList.getElementsByTagName("LI"));
                 $(template).remove();
                 removeTemplateData(template.id);
-                if (templateList.getElementsByTagName("LI")[0] == null) {
+                if (!templateList.getElementsByTagName("LI")[0]) {
                     createTemplate(templateTemplate);
                 }
                 saveList();
@@ -207,14 +207,12 @@
             <ul class="list-group list-group-flush" id="template-list" style="font-size: 20px;"></ul>
         </div>
         <script type="text/javascript">
-            $( function() {
-                $( "#template-list" ).sortable({
-                    stop: function(event, ui) {
-                        saveList();
-                    }
-                });
-                $( "#template-list" ).disableSelection();
-            } );
+            $( "#template-list" ).sortable({
+                stop: function(event, ui) {
+                    saveList();
+                }
+            });
+            $( "#template-list" ).disableSelection();
         </script>
 
     </body>

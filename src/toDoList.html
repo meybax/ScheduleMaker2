@@ -151,7 +151,7 @@
             // function to delete activity when closed
             function remove(task) {
                 $(task).remove();
-                if (taskList.getElementsByTagName("LI")[0] == null) {
+                if (!taskList.getElementsByTagName("LI")[0]) {
                     addTask(taskTemplate);
                 }
                 saveList();
@@ -184,15 +184,13 @@
         </div>
         <script type="text/javascript">
             // activates sortable
-            $( function() {
-                $( "#task-list" ).sortable({
-                    items: "li:not(.complete)",
-                    stop: function(event, ui) {
-                        saveList();
-                    }
-                });
-                $( "#task-list" ).disableSelection();
-            } );
+            $( "#task-list" ).sortable({
+                items: "li:not(.complete)",
+                stop: function(event, ui) {
+                    saveList();
+                }
+            });
+            $( "#task-list" ).disableSelection();
 
             // function to add new task
             function addTask(task) {

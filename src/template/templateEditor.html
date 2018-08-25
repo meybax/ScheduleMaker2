@@ -100,7 +100,7 @@
                     
                     var activities = getActivities();
                     for (var i = 0; i < lockedItems.length; i++) {
-                        toggleLocked(activities[lockedItems[i]].getElementsByTagName("img")[0]);
+                        toggleLocked(activities[lockedItems[i]].getElementsByTagName("IMG")[0]);
                     }
                 } 
                 if (!activityList.firstChild) {
@@ -453,7 +453,9 @@
             // function to delete activity when closed
             function remove(activity) {
                 $(activity).remove();
-                if (activityList.getElementsByTagName("LI")[0] == null) addDefaultActivity();
+                if (!activityList.getElementsByTagName("LI")[0]) {
+                    addDefaultActivity();
+                }
                 updateDuration();
                 saveList();
             }
@@ -467,21 +469,18 @@
         </div>
         <script type="text/javascript">
             // sortable activations
-            $( function() {
-                $( "#activity-list" ).sortable({
-                    scroll: true,
-                    cancel: ".locked, input",   // makes locked function unsortable
-                    start: function(event, ui) {
-                        isEditing = true;
-                    },
-                    stop: function(event, ui) {
-                        updateStartTime();
-                        saveList();
-                        isEditing = false;
-                    }
-                });
-                $( "#activity-list" ).disableSelection();
-            } );
+            $( "#activity-list" ).sortable({
+                scroll: true,
+                cancel: ".locked, input",   // makes locked function unsortable
+                start: function(event, ui) {
+                    isEditing = true;
+                },
+                stop: function(event, ui) {
+                    updateStartTime();
+                    saveList();
+                    isEditing = false;
+                }
+            });
 
             // function to toggle if an activity is locked or not
             function toggleLocked(img) {
