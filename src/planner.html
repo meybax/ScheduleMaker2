@@ -13,6 +13,7 @@
         <link href="css/bootstrap.css" rel="stylesheet">
         <link href="css/clockpicker.css" rel="stylesheet">
         <link href="css/standalone.css" rel="stylesheet">
+        <link href="css/jquery-ui.css" rel="stylesheet">
         <link href="css/style.css" rel="stylesheet">
         <!-- General CSS Style -->
         <style>
@@ -70,6 +71,15 @@
                 } else {
                     addSubject(subjectTemplate.cloneNode(true), true);
                 }
+
+                toggleEdit(document.getElementById("edit"));
+
+                $( "input" ).focusin(function() {
+                    $("#subject-list").sortable("disable"); 
+                });
+                $( "input" ).focusout(function() {
+                    $("#subject-list").sortable("enable"); 
+                });
  
             };
 
@@ -112,37 +122,19 @@
                     <a class="nav-link" href="planner.html">Planner</a>
                 </li>
             </ul>
-            <button class="btn btn-success order-3 btn-lg" type="button" onclick="addSubject(subjectTemplate.cloneNode(true), true)">Add Subject</button>
+            <button class="btn btn-info order-3 btn-lg" id="edit" type="button" onclick="toggleEdit(this)">View</button>
         </nav>
         <script type="text/javascript">
-            function addSubject(subject, isEmpty) {
-                if (isEmpty) {
-                    addAssignment(assignmentTemplate, subject)
+            function toggleEdit(btn) {
+                if (btn.innerHTML === "Edit") {
+                    btn.innerHTML = "View";
+                    $("BUTTON").css({"display" : "block"});
+                } else {
+                    btn.innerHTML = "Edit";
+                    $("BUTTON").css({"display" : "none"});
+                    btn.style.display = "block";
+
                 }
-                activateSubjectCBF(subject);
-
-                subjectList.appendChild(subject);
-                saveList();
-            }
-            function activateSubjectCBF(subject) {
-                var nameInput = getInput(subject, "subject-name");
-                nameInput.addEventListener("keyup", function(event) {
-                    if (event.key === "Enter") {
-                        $(nameInput).trigger("blur");
-                    }
-                });
-                nameInput.onblur = function() { 
-                    saveList(); 
-                };
-
-                var assignmentList = subject.getElementsByTagName("UL")[0];
-                // activates sortable
-                $( assignmentList ).sortable({
-                    stop: function(event, ui) {
-                        saveList();
-                    }
-                });
-                $( assignmentList ).disableSelection();
             }
         </script>
 
@@ -212,6 +204,12 @@
             }
             function activateAssignmentCBF(assignment) {
                 var dateInput = getInput(assignment, "assign-date");
+                $( dateInput ).datepicker({
+                    showOtherMonths: true,
+                    selectOtherMonths: true,
+                    changeMonth: true,
+                    changeYear: true
+                });
                 dateInput.addEventListener("keyup", function(event) {
                     if (event.key === "Enter") {
                         $(dateInput).trigger("blur");
@@ -283,6 +281,41 @@
                 }
             });
             $( "#subject-list" ).disableSelection();
+        </script>
+
+        <div class="container-fluid text-center" style="margin-top: 10px">
+            <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addSubject(subjectTemplate.cloneNode(true), true)">Add Subject</button>
+        </div>
+        <script type="text/javascript">
+            function addSubject(subject, isEmpty) {
+                if (isEmpty) {
+                    addAssignment(assignmentTemplate, subject)
+                }
+                activateSubjectCBF(subject);
+
+                subjectList.appendChild(subject);
+                saveList();
+            }
+            function activateSubjectCBF(subject) {
+                var nameInput = getInput(subject, "subject-name");
+                nameInput.addEventListener("keyup", function(event) {
+                    if (event.key === "Enter") {
+                        $(nameInput).trigger("blur");
+                    }
+                });
+                nameInput.onblur = function() { 
+                    saveList(); 
+                };
+
+                var assignmentList = subject.getElementsByTagName("UL")[0];
+                // activates sortable
+                $( assignmentList ).sortable({
+                    stop: function(event, ui) {
+                        saveList();
+                    }
+                });
+                $( assignmentList ).disableSelection();
+            }
         </script>
 
     </body>

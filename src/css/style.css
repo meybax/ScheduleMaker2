@@ -22,9 +22,9 @@ button:focus {
     background-color: black;
 }
 
-.activity-start { 
+.activity-start, .assign-date { 
     color: lime; 
 }
-.activity-duration { 
+.activity-duration, .assign-duration { 
     color: cyan;
 }
