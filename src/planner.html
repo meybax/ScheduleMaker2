@@ -196,6 +196,14 @@
                 saveList();
             }
             function activateAssignmentCBF(assignment) {
+                var clockpicker = assignment.getElementsByClassName("clockpicker")[0];
+                var popup;
+                $(clockpicker).clockpicker({
+                    afterShow: function(self) { 
+                        popup = self; 
+                    }
+                });
+
                 var dateInput = getInput(assignment, "assign-date");
                 $( dateInput ).datepicker({
                     showOtherMonths: true,
@@ -230,6 +238,9 @@
                     }
                 });
                 durationInput.onblur = function() { 
+                    if (popup) {
+                        popup.hide(); 
+                    }
                     durationInput.value = durationInput.value.trim();
                     saveList(); 
                 };
@@ -246,7 +257,9 @@
                     <input type="text" class="form-control-plaintext assign-name" style="margin-left: 10px;" placeholder="Name">
                 </div>
                 <div class="col">
-                    <input type="text" class="form-control-plaintext assign-duration" placeholder="Est. Duration">
+                    <div class="input-group clockpicker" data-autoclose="true">
+                        <input type="text" class="form-control-plaintext assign-duration" placeholder="Est. Duration">
+                    </div>
                 </div>
                 <button type="button" class="close" aria-label="Close" onclick="removeAssignment(this.parentNode.parentNode)">
                     <span aria-hidden="true" style="color: red;">&times;</span>

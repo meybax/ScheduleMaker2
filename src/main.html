@@ -258,140 +258,10 @@
                 }
                 return hr + ":" + min;
             }
-            // function to convert duration time input to string
-            function durationNumToStr(hr, min) {
-                var time;
-                hr = parseInt(hr);
-                min = parseInt(min);
-                if (hr == 0) {
-                    time = min + " min";
-                }
-                else if (min == 0) {
-                    time = hr + " hr";
-                }
-                else {
-                    time = hr + " hr " + min + " min";
-                }
-                return time;
-            }
-            // function to convert string to time input
-            function durationStrToNum(str) {
-                var hr = "00";
-                var min = "00";
-                if (str.length == 4) {
-                    if (str.substring(2, 4) === "hr") {
-                        // single hr ---
-                        hr = parseInt(str.substring(0, 1));
-                        if (isNaN(hr)) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                } else if (str.length == 5) {
-                    if (str.substring(3, 5) === "hr") {
-                        // double hr ---
-                        hr = parseInt(str.substring(0, 2));
-                        if (isNaN(hr)) {
-                            return false;
-                        }
-                    } else if (str.substring(2, 5) === "min") {
-                        // single min ---
-                        min = parseInt(str.substring(0, 1));
-                        if (isNaN(min)) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                } else if (str.length == 6) {
-                    if (str.substring(3, 6) === "min") {
-                        // double min ---
-                        min = parseInt(str.substring(0, 2));
-                        if (isNaN(min)) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                } else if (str.length == 10) {
-                    if (str.substring(2, 4) === "hr" && str.substring(7, 10) === "min") {
-                        // single hr single min ---
-                        hr = parseInt(str.substring(0, 1));
-                        min = parseInt(str.substring(5, 6));
-                        if (isNaN(hr) || isNaN(min)) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                } else if (str.length == 11) {
-                    if (str.substring(8, 11) === "min") {
-                        if (str.substring(2, 4) === "hr") {
-                            // single hr double min ---
-                            hr = parseInt(str.substring(0, 1));
-                            min = parseInt(str.substring(5, 7));
-                            if (isNaN(hr) || isNaN(min)) {
-                                return false;
-                            }
-                        } else if (str.substring(3, 5) === "hr") {
-                            // double hr single min ---
-                            hr = parseInt(str.substring(0, 2));
-                            min = parseInt(str.substring(6, 7));
-                            if (isNaN(hr) || isNaN(min)) {
-                                return false;
-                            }
-                        }
-                    } else {
-                        return false;
-                    }
-                } else if (str.length == 12) {
-                    if (str.substring(3, 5) === "hr" && str.substring(9, 12) === "min") {
-                        // double hr double min ---
-                        hr = parseInt(str.substring(0, 2));
-                        min = parseInt(str.substring(6, 8));
-                        if (isNaN(hr) || isNaN(min)) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-                return getClockTime(hr, min);
-            }
             
             // function to return array of activities which have a valid start time
             function getActivities() {
                 return activityList.getElementsByClassName("list-group-item");
-            }
-            
-            // function to check if an input value is a valid time
-            function isValidTimeInput(input) {
-                if (!input.value) {
-                    return false;
-                }
-                if (input.value.length != 5) { 
-                    if (input.value.length == 4) {
-                        input.value = "0" + input.value;
-                    }
-                    else {
-                        return false; 
-                    }
-                }
-                if (input.value[2] != ":") {
-                    return false;
-                }
-                hrInput = input.value.substring(0, 2);
-                minInput = input.value.substring(3, 5);
-                if (isNaN(hrInput) || isNaN(minInput)) {
-                    return false;
-                }
-                if (hrInput < 0 || hrInput > 23 || minInput < 0 || minInput > 59) {
-                    return false;
-                }
-                return true;
             }
 
             // function to add default activity to existing list
@@ -604,11 +474,9 @@
                     }
                 });
                 startInput.onfocus = function() { 
-                    //$( "#activity-list" ).sortable( "disable" );
                     isEditing = true; 
                 };
                 startInput.onblur = function() {
-                    //$( "#activity-list" ).sortable( "enable" );
                     if (ppStart) {
                         ppStart.hide(); 
                     }
@@ -625,11 +493,9 @@
                     }
                 });
                 durationInput.onfocus = function() {
-                    //$( "#activity-list" ).sortable( "disable" );
                     isEditing = true;
                 }
                 durationInput.onblur = function() {
-                    //$( "#activity-list" ).sortable( "enable" );
                     if (ppDur) {
                         ppDur.hide();
                     }
