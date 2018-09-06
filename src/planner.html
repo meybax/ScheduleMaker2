@@ -73,13 +73,6 @@
                 }
 
                 toggleEdit(document.getElementById("edit"));
-
-                $( "input" ).focusin(function() {
-                    $("#subject-list").sortable("disable"); 
-                });
-                $( "input" ).focusout(function() {
-                    $("#subject-list").sortable("enable"); 
-                });
  
             };
 
@@ -303,8 +296,12 @@
                         $(nameInput).trigger("blur");
                     }
                 });
+                nameInput.onfocus = function() {
+                    //$("#subject-list").sortable("disable"); 
+                }
                 nameInput.onblur = function() { 
                     saveList(); 
+                    //$("#subject-list").sortable("enable"); 
                 };
 
                 var assignmentList = subject.getElementsByTagName("UL")[0];
@@ -314,7 +311,16 @@
                         saveList();
                     }
                 });
+
                 $( assignmentList ).disableSelection();
+                $( subject ).focusin(function() {
+                    $(assignmentList).sortable("disable"); 
+                    $("#subject-list").sortable("disable");
+                });
+                $( subject ).focusout(function() {
+                    $(assignmentList).sortable("enable"); 
+                    $("#subject-list").sortable("enable");
+                });
             }
         </script>
 

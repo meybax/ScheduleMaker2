@@ -100,9 +100,8 @@
                 }
 
                 var audio = document.getElementById("notif");
-                var notifName;
                 audio.addEventListener('ended', function(){
-                    alert(notifName + " has started.");
+                    alert("The next activity has started.");
                 });
                 
                 // function to update the status of each activity
@@ -126,7 +125,6 @@
                                     isFound = true;
                                 } else if (currTime < end) {
                                     if (currentActivity !== activities[i] && currTime === tempTime && notify) {
-                                        notifName = getInput(activities[i], "activity-name").value;
                                         audio.play();
                                     }
                                     updateCurrent(activities[i]);
@@ -606,11 +604,11 @@
                     }
                 });
                 startInput.onfocus = function() { 
-                    $( "#activity-list" ).sortable( "disable" );
+                    //$( "#activity-list" ).sortable( "disable" );
                     isEditing = true; 
                 };
                 startInput.onblur = function() {
-                    $( "#activity-list" ).sortable( "enable" );
+                    //$( "#activity-list" ).sortable( "enable" );
                     if (ppStart) {
                         ppStart.hide(); 
                     }
@@ -627,11 +625,11 @@
                     }
                 });
                 durationInput.onfocus = function() {
-                    $( "#activity-list" ).sortable( "disable" );
+                    //$( "#activity-list" ).sortable( "disable" );
                     isEditing = true;
                 }
                 durationInput.onblur = function() {
-                    $( "#activity-list" ).sortable( "enable" );
+                    //$( "#activity-list" ).sortable( "enable" );
                     if (ppDur) {
                         ppDur.hide();
                     }
@@ -643,6 +641,13 @@
                         saveList();
                     }
                 };
+
+                $( activity ).focusin(function() {
+                    $("#activity-list").sortable("disable");
+                });
+                $( activity ).focusout(function() {
+                    $("#activity-list").sortable("enable");
+                });
             }
             // activateCallBackFunctions helper to verify start time input
             function checkTimeInput(activity) {
