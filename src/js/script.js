@@ -210,3 +210,14 @@ function isValidTimeInput(input) {
     }
     return true;
 }
+
+// function to convert raw numbers into clock time string
+function getClockTime(hr, min) {
+    if (hr.toString().length == 1) {
+        hr = "0" + hr;
+    }
+    if (min.toString().length == 1) {
+        min = "0" + min;
+    }
+    return hr + ":" + min;
+}

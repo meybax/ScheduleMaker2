@@ -190,12 +190,12 @@
             function addAssignment(assignment, subject) {
                 var list = subject.getElementsByClassName("assignment-list")[0];
                 var newAssignment = assignment.cloneNode(true);
-                activateAssignmentCBF(newAssignment);
+                activateAssignmentCBF(newAssignment, list);
 
                 list.appendChild(newAssignment);
                 saveList();
             }
-            function activateAssignmentCBF(assignment) {
+            function activateAssignmentCBF(assignment, list) {
                 var clockpicker = assignment.getElementsByClassName("clockpicker")[0];
                 var popup;
                 $(clockpicker).clockpicker({
@@ -242,8 +242,45 @@
                         popup.hide(); 
                     }
                     durationInput.value = durationInput.value.trim();
+                    checkDurationInput(assignment, list);
                     saveList(); 
                 };
+            }
+
+            // function to verify duration input
+            function checkDurationInput(assignment, list) {
+                $(".alert").alert("close");
+                var durationInput = getInput(assignment, "assign-duration");
+                if (isValidTimeInput(durationInput)) {
+                    durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
+                    return true;
+                } else {
+                    durationInput.value = durationStrToNum(durationInput.value);
+                    if (isValidTimeInput(durationInput)) {
+                        durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
+                        return true;
+                    } else {
+                        var msg = "<strong>Invalid input.</strong> Must be in format XX hr, XX min, XX hr XX min, or XX:XX" +
+                            "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                                "<span aria-hidden=\"true\">&times;</span>" +
+                            "</button>";
+                        createAlert(assignment, "duration", msg, list);
+                    }
+                }
+            }
+            // functtion to create an alert for invalid input
+            function createAlert(assignment, type, msg, list) {
+                var alert = document.createElement("DIV");
+                alert.style = "text-align: center; margin-bottom: 0px";
+                alert.classList.add("alert", "alert-danger", "alert-dismissible", "show")
+                alert.setAttribute("role", "alert");
+                alert.innerHTML = msg;
+                $(assignment).after(alert);
+                
+                // reverts invalid input back to previously valid input
+                var index = getIndex(assignment, list.getElementsByTagName("LI"));
+                var listIndex = getIndex(list, subjectList.getElementsByClassName("assignment-list"));
+                getInput(assignment, "assign-" + type).value = JSON.parse(localStorage.getItem("planner-" + type + "-" + listIndex))[index];
             }
         </script>
 
@@ -309,12 +346,8 @@
                         $(nameInput).trigger("blur");
                     }
                 });
-                nameInput.onfocus = function() {
-                    //$("#subject-list").sortable("disable"); 
-                }
                 nameInput.onblur = function() { 
                     saveList(); 
-                    //$("#subject-list").sortable("enable"); 
                 };
 
                 var assignmentList = subject.getElementsByTagName("UL")[0];
