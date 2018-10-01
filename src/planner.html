@@ -218,6 +218,7 @@
                 });
                 dateInput.onblur = function() { 
                     dateInput.value = dateInput.value.trim();
+                    checkDateInput(assignment, list)
                     saveList(); 
                 };
 
@@ -268,6 +269,226 @@
                     }
                 }
             }
+
+            function checkDateInput(assignment, list) {
+                var dateInput = getInput(assignment, "assign-date");
+                var newDate = isValidDate(dateInput.value);
+                if (newDate) {
+                    dateInput.value = newDate;
+                } else {
+                    var msg = "<strong>Invalid input.</strong> Must be in format XX/XX/XXXX (The month or day may be inputted as a single digit)" +
+                        "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                            "<span aria-hidden=\"true\">&times;</span>" +
+                        "</button>"; 
+                        createAlert(assignment, "date", msg, list);
+                }
+            }
+            function isValidDate(str) {
+                str = str.replace(/\s+/g, '');
+                var month, day, year
+                if (str.length == 3) {
+                    if (str.charAt(1) === "/") {
+                        // single month, single day, no year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 3));
+                        year = (new Date()).getFullYear();
+                        if (isNaN(month) || isNaN(day)) {
+                            return false;
+                        }
+                        month = "0" + month;
+                        day = "0" + day;
+                    }
+                }
+                else if (str.length == 4) {
+                    if (str.charAt(1) === "/") {
+                        // single month, double day, no year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 4));
+                        year = (new Date()).getFullYear();
+                        if (isNaN(month) || isNaN(day)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        month = "0" + month;  
+                    } else if (str.charAt(2) === "/") {
+                        // double month, single day, no year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 4));
+                        year = (new Date()).getFullYear();
+                        if (isNaN(month) || isNaN(day)) {
+                            return false;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                        day = "0" + day;
+                    }
+                    else {
+                        return false;
+                    }
+                } else if (str.length == 5) {
+                    if (str.charAt(2) === "/") {
+                        // double month, double day, no year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 5));
+                        year = (new Date()).getFullYear();
+                        if (isNaN(month) || isNaN(day)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else if (str.length == 6) {
+                    if (str.charAt(1) === "/" && str.charAt(3) === "/") {
+                        // single month, single day, double year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 3));
+                        year = parseInt(str.substring(4, 6));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        month = "0" + month;
+                        day = "0" + day;
+                        year = "20" + year;
+                    } else {
+                        return false;
+                    }
+                } else if (str.length == 7) {
+                    if (str.charAt(1) === "/" && str.charAt(4) === "/") {
+                        // single month, double day, double year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 4));
+                        year = parseInt(str.substring(5, 7));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        month = "0" + month;
+                        year = "20" + year;
+                    } else if (str.charAt(2) === "/" && str.charAt(4) === "/") {
+                        // double month, single day, double year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 4));
+                        year = parseInt(str.substring(5, 7));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                        day = "0" + day;
+                        year = "20" + year;
+                    } else {
+                        return false;
+                    }
+                } else if (str.length == 8) {
+                    if (str.charAt(2) === "/" && str.charAt(5) === "/") {
+                        // double month, double day, double year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 5));
+                        year = parseInt(str.substring(6, 8));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                        year = "20" + year;
+                    } else if (str.charAt(1) === "/" && str.charAt(3) === "/") {
+                        // single month, single day, quadruple year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 3));
+                        year = parseInt(str.substring(4, 8));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        month = "0" + month;
+                        day = "0" + day;
+                    } else {
+                        return false;
+                    }
+                } else if (str.length == 9) {
+                    if (str.charAt(1) === "/" && str.charAt(4) === "/") {
+                        // single month, double day, quadruple year
+                        month = parseInt(str.substring(0, 1));
+                        day = parseInt(str.substring(2, 4));
+                        year = parseInt(str.substring(5, 9));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        month = "0" + month;
+                    } else if (str.charAt(2) === "/" && str.charAt(4) === "/") {
+                        // double month, single day, quadruple year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 4));
+                        year = parseInt(str.substring(5, 9));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                        day = "0" + day;
+                    } else {
+                        return false;
+                    }
+                } else if (str.length == 10) {
+                    if (str.charAt(2) === "/" && str.charAt(5) === "/") {
+                        // double month, double day, quadruple year
+                        month = parseInt(str.substring(0, 2));
+                        day = parseInt(str.substring(3, 5));
+                        year = parseInt(str.substring(6, 10));
+                        if (isNaN(month) || isNaN(day) || isNaN(year)) {
+                            return false;
+                        }
+                        if (day < 10) {
+                            day = "0" + day;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+                
+                if (month == 2) {
+                    if (year % 4 == 0) {
+                        if (day > 29) {
+                            return false;
+                        }
+                    } else {
+                        if (day > 28) {
+                            return false;
+                        }
+                    }
+                }
+                var date = new Date();
+                date.setFullYear(year, month, day);
+                if ((date.getFullYear() == year) && (date.getMonth() == month) && (date.getDate() == day)) {
+                    return month + "/" + day + "/" + year;
+                }
+                return false;
+            }
+
             // functtion to create an alert for invalid input
             function createAlert(assignment, type, msg, list) {
                 var alert = document.createElement("DIV");
