@@ -141,7 +141,7 @@
             </div>
             <div class="row" style="margin-bottom: 20px; margin-left:10px; margin-right: -15px;">
                 <div class="col">
-                    <button class="btn btn-info order-3 btn-lg btn-block" type="button" onclick="">Sort</button>
+                    <button class="btn btn-info order-3 btn-lg btn-block" type="button" onclick="sort(this.parentNode.parentNode.parentNode)">Sort</button>
                 </div>
                 <div class="col" style="margin-right: 20px; margin-left: -5px;">
                     <button class="btn btn-success order-3 btn-lg btn-block" type="button" onclick="addAssignment(assignmentTemplate, this.parentNode.parentNode.parentNode)">Add Assignment</button>
@@ -187,6 +187,33 @@
                 saveList();
             }
 
+            function sort(subject) {
+                var list = subject.getElementsByClassName("assignment-list")[0].getElementsByTagName("li");
+                for (var i = 0; i < list.length - 1; i++) {
+                    for (var j = 0; j < list.length - i - 1; j++) {
+                        if (!compareAssignment(list[j], list[j + 1])) {
+                            list[j].parentNode.insertBefore(list[j + 1], list[j]);
+                        }
+                    }
+                }
+                saveList();
+            }
+            // returns true if a1 is earlier than a2
+            function compareAssignment(a1, a2) {
+                var d1 = new Date(getInput(a1, "assign-date").value).getTime();
+                var d2 = new Date(getInput(a2, "assign-date").value).getTime();
+                if (d1 > d2) {
+                    return false;
+                } else if (d1 == d2) {
+                    var dur1 = durationStrToNum(getInput(a1, "assign-duration").value);
+                    var dur2 = durationStrToNum(getInput(a2, "assign-duration").value);
+                    if (dur1 < dur2) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             function addAssignment(assignment, subject) {
                 var list = subject.getElementsByClassName("assignment-list")[0];
                 var newAssignment = assignment.cloneNode(true);
@@ -209,7 +236,10 @@
                     showOtherMonths: true,
                     selectOtherMonths: true,
                     changeMonth: true,
-                    changeYear: true
+                    changeYear: true,
+                    onSelect: function() {
+                        saveList();
+                    }
                 });
                 dateInput.addEventListener("keyup", function(event) {
                     if (event.key === "Enter") {
@@ -250,8 +280,8 @@
 
             // function to verify duration input
             function checkDurationInput(assignment, list) {
-                $(".alert").alert("close");
                 var durationInput = getInput(assignment, "assign-duration");
+                var original = durationInput.value;
                 if (isValidTimeInput(durationInput)) {
                     durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
                     return true;
@@ -260,12 +290,14 @@
                     if (isValidTimeInput(durationInput)) {
                         durationInput.value = durationNumToStr(durationInput.value.substring(0, 2), durationInput.value.substring(3, 5));
                         return true;
-                    } else {
+                    } else if (original) {
                         var msg = "<strong>Invalid input.</strong> Must be in format XX hr, XX min, XX hr XX min, or XX:XX" +
                             "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
                                 "<span aria-hidden=\"true\">&times;</span>" +
                             "</button>";
                         createAlert(assignment, "duration", msg, list);
+                    } else {
+                        durationInput.value = original;
                     }
                 }
             }
@@ -275,7 +307,7 @@
                 var newDate = isValidDate(dateInput.value);
                 if (newDate) {
                     dateInput.value = newDate;
-                } else {
+                } else if (dateInput.value) {
                     var msg = "<strong>Invalid input.</strong> Must be in format XX/XX/XXXX (The month or day may be inputted as a single digit)" +
                         "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
                             "<span aria-hidden=\"true\">&times;</span>" +
