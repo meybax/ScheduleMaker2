@@ -524,10 +524,10 @@
                 var tempTime = getInput(temp, "activity-start").value;
                 var index = 0;
                 if (activities.length > 0 && tempTime > getInput(activities[index], "activity-start").value) {
-                    while (index < activities.length - 1 && tempTime > getInput(activities[index], "activity-start").value) {
+                    while (index < activities.length && tempTime > getInput(activities[index], "activity-start").value) {
                         index++;
                     }
-                    if (index == activities.length - 1) {
+                    if (index == activities.length) {
                         $(last(activities)).after(temp);
                     }
                     else {
