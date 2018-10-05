@@ -21,6 +21,11 @@
                 display: table;
                 margin: 0 auto;
             }
+
+            .overdue {
+                background-color:  rgb(200, 25, 25); 
+            }
+
         </style>
 
         <!-- Javascript Libraries/Plug-ins -->
@@ -72,9 +77,29 @@
                     addSubject(subjectTemplate.cloneNode(true), true);
                 }
 
+                updateStatus();
+
                 toggleEdit(document.getElementById("edit"));
  
             };
+
+            function updateStatus() {
+                var list1 = subjectList.getElementsByClassName("card");
+                for (var i = 0; i < list1.length; i++) {
+                    var list2 = list1[i].getElementsByClassName("assignment-list")[0].getElementsByTagName("li");
+                    for (var j = 0; j < list2.length; j++) {
+                        if (getInput(list2[j], "assign-date").value) {
+                            var date = new Date(getInput(list2[j], "assign-date").value).getTime();
+                            var currDate = new Date().getTime();
+                            if (date < currDate) {
+                                list2[j].classList.add("overdue");
+                            } else {
+                                list2[j].classList.remove("overdue");
+                            }
+                        }
+                    }
+                }
+            }
 
             function saveList() {
                 var subjectNames = inputValueArray(subjectList, "subject-name");
@@ -238,6 +263,7 @@
                     changeMonth: true,
                     changeYear: true,
                     onSelect: function() {
+                        updateStatus();
                         saveList();
                     }
                 });
@@ -249,6 +275,7 @@
                 dateInput.onblur = function() { 
                     dateInput.value = dateInput.value.trim();
                     checkDateInput(assignment, list)
+                    updateStatus();
                     saveList(); 
                 };
 
